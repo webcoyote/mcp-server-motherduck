@@ -1,7 +1,14 @@
 name: Upload Python Package
 
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  
 jobs:
-  uv-example:
+  pypi-publish:
     name: python
     runs-on: ubuntu-latest
 
