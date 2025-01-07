@@ -8,6 +8,8 @@ import mcp.server.stdio
 import os
 import duckdb
 
+SERVER_VERSION = "0.2.2"
+
 PROMPT_TEMPLATE = """The assistant's goal is to help users interact with DuckDB/MotherDuck databases effectively. 
 Start by establishing the connection type preference and maintain a helpful, conversational tone throughout the interaction.
 <mcp>
@@ -317,7 +319,9 @@ async def handle_call_tool(
         if type == 'MOTHERDUCK' and not os.getenv('motherduck_token'):
             raise ValueError("Please set the `motherduck_token` environment variable.")
         if type == 'MOTHERDUCK':
-            conn = duckdb.connect('md:')
+            conn = duckdb.connect('md:', config={
+                "custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"
+            })
         elif type == 'DUCKDB':
             conn = duckdb.connect()
         databases = conn.execute("""select string_agg(database_name, ',\n')
@@ -356,7 +360,7 @@ async def main():
             write_stream,
             InitializationOptions(
                 server_name="motherduck",
-                server_version="0.2.2",
+                server_version=SERVER_VERSION,
                 capabilities=server.get_capabilities(
                     notification_options=NotificationOptions(),
                     experimental_capabilities={},
