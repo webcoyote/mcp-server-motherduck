@@ -28,6 +28,7 @@ Add the snippet below to your Claude Desktop config and make sure to set the HOM
 When using MotherDuck, you also need to set a [MotherDuck token](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/authenticating-to-motherduck/#storing-the-access-token-as-an-environment-variable) env var.
 
 On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
+
 On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 ### Servers Configuration
