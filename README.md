@@ -1,6 +1,6 @@
 # mcp-server-motherduck MCP server
 
-A [MCP server](https://modelcontextprotocol.io/introduction) for MotherDuck and local DuckDB. 
+An [MCP server](https://modelcontextprotocol.io/introduction) for MotherDuck and local DuckDB. 
 
 ## Components
 
