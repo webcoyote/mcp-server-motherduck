@@ -1,17 +1,64 @@
-from mcp.server.models import InitializationOptions
+import os
+import logging
+import duckdb
+from pydantic import AnyUrl
+from typing import Literal
+import mcp.server.stdio
 import mcp.types as types
 from mcp.server import NotificationOptions, Server
-from pydantic import AnyUrl
-import mcp.server.stdio
-import os
-import duckdb
+from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
 SERVER_VERSION = "0.2.2"
 
+logger = logging.getLogger("mcp_server_motherduck")
+logger.info("Starting MCP MotherDuck Server")
+
+
+class DuckDBDatabase:
+    def __init__(self, db_path: str = None):
+        self.db_path = db_path
+        self.conn: duckdb.DuckDBPyConnection | None = None
+
+        self.db_type: Literal["duckdb", "motherduck"] | None = None
+
+    def initialize_database(self, db_path: str = None) -> None:
+        """Initialize connection to the DuckDB database"""
+        if self.conn is None:
+            if db_path is None and os.getenv("motherduck_token"):
+                db_path = "md:"
+
+            # Check if the db_path is a local file and exists
+            if not db_path.startswith("md:") and not os.path.exists(db_path):
+                raise FileNotFoundError(
+                    f"The database path `{db_path}` does not exist."
+                )
+            if db_path.startswith("md:"):
+                if not os.getenv("motherduck_token"):
+                    raise ValueError(
+                        "Please set the `motherduck_token` environment variable."
+                    )
+                self.db_type = "motherduck"
+            else:
+                self.db_type = "duckdb"
+
+            self.conn = duckdb.connect(
+                db_path,
+                config={"custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"},
+            )
+
+    def query(self, query: str) -> str:
+        try:
+            self.initialize_database()
+            return str(self.conn.execute(query).fetchall())
+        except Exception as e:
+            logger.error(f"Database error executing query: {e}")
+            raise ValueError(f"Error executing query: {e}")
+
 
 async def main():
     server = Server("mcp-server-motherduck")
+    database = DuckDBDatabase()
 
     @server.list_resources()
     async def handle_list_resources() -> list[types.Resource]:
@@ -35,6 +82,8 @@ async def main():
         List available prompts.
         Each prompt can have optional arguments to customize its behavior.
         """
+        # TODO: Check where and how this is used, and how to optimize this.
+        # Check postgres and sqlite servers.
         return [
             types.Prompt(
                 name="duckdb-motherduck-initial-prompt",
@@ -50,6 +99,8 @@ async def main():
         Generate a prompt by combining arguments with server state.
         The prompt includes all current notes and can be customized via arguments.
         """
+        # TODO: Check where and how this is used, and how to optimize this.
+        # Check postgres and sqlite servers.
         if name != "duckdb-motherduck-initial-prompt":
             raise ValueError(f"Unknown prompt: {name}")
 
@@ -99,6 +150,20 @@ async def main():
                 },
             ),
             types.Tool(
+                name="execute-query",
+                description="Execute a query on the MotherDuck (DuckDB) database",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "SQL query to execute",
+                        },
+                    },
+                    "required": ["query"],
+                },
+            ),
+            types.Tool(
                 name="query",
                 description="Execute a query on the MotherDuck (DuckDB) database",
                 inputSchema={
@@ -115,75 +180,54 @@ async def main():
         ]
 
     @server.call_tool()
-    async def handle_call_tool(
+    async def handle_tool_call(
         name: str, arguments: dict | None
     ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
         """
         Handle tool execution requests.
         Tools can modify server state and notify clients of changes.
         """
+        try:
+            if name == "initialize-connection":
+                query_result = database.query(
+                    """
+                    SELECT string_agg(database_name, ',\n')
+                    from duckdb_databases() where database_name 
+                    not in ('system', 'temp')
+                    """
+                ).fetchone()[0]
+                tool_response = f"Connection to {database.db_path} successfully established. Here are the available databases: \n{query_result}"
+                return [types.TextContent(type="text", text=tool_response)]
+            if name == "read-schemas":
+                database_name = arguments["database_name"]
+                query_result_tables = database.query(
+                    f"""
+                    SELECT string_agg(regexp_replace(sql, 'CREATE TABLE ', 'CREATE TABLE '||database_name||'.'), '\n\n') as sql 
+                    FROM duckdb_tables()
+                    WHERE database_name = '{database_name}'
+                    """
+                ).fetchone()[0]
+                query_result_views = database.query(
+                    f"""
+                    SELECT string_agg(regexp_replace(sql, 'CREATE TABLE ', 'CREATE TABLE '||database_name||'.'), '\n\n') as sql 
+                    FROM duckdb_views()
+                    where schema_name not in ('information_schema', 'pg_catalog', 'localmemdb')
+                    and view_name not in ('duckdb_columns','duckdb_constraints','duckdb_databases','duckdb_indexes','duckdb_schemas','duckdb_tables','duckdb_types','duckdb_views','pragma_database_list','sqlite_master','sqlite_schema','sqlite_temp_master','sqlite_temp_schema')
+                    and database_name = '{database_name}'
+                    """
+                ).fetchone()[0]
+                tool_response = f"Here are all tables: \n{query_result_tables} \n\n Here are all views: {query_result_views}"
+                return [types.TextContent(type="text", text=str(tool_response))]
+            if name == "execute-query":
+                tool_response = database.query(arguments["query"])
+                return [types.TextContent(type="text", text=str(tool_response))]
+            if name == "query":
+                tool_response = database.query(arguments["query"])
+                return [types.TextContent(type="text", text=str(tool_response))]
 
-        if name == "initialize-connection":
-            db_type = arguments["type"].strip().upper()
-            if db_type not in ["DUCKDB", "MOTHERDUCK"]:
-                raise ValueError("Only 'DuckDB' or 'MotherDuck' are supported")
-            if db_type == "MOTHERDUCK" and not os.getenv("motherduck_token"):
-                raise ValueError(
-                    "Please set the `motherduck_token` environment variable."
-                )
-            if db_type == "MOTHERDUCK":
-                conn = duckdb.connect(
-                    "md:",
-                    config={
-                        "custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"
-                    },
-                )
-            elif db_type == "DUCKDB":
-                conn = duckdb.connect()
-            databases = conn.execute(
-                """select string_agg(database_name, ',\n')
-                                        from duckdb_databases() where database_name 
-                                        not in ('system', 'temp')"""
-            ).fetchone()[0]
-            response = f"Connection to {db_type} successfully established. Here are the available databases: \n{databases}"
-            return [types.TextContent(type="text", text=response)]
-        if name == "read-schemas":
-            database = arguments["database_name"]
-            tables = conn.execute(
-                f"""
-                        SELECT string_agg(regexp_replace(sql, 'CREATE TABLE ', 'CREATE TABLE '||database_name||'.'), '\n\n') as sql 
-                        FROM duckdb_tables()
-                        WHERE database_name = '{database}'"""
-            ).fetchone()[0]
-            views = conn.execute(
-                f"""
-                        SELECT string_agg(regexp_replace(sql, 'CREATE TABLE ', 'CREATE TABLE '||database_name||'.'), '\n\n') as sql 
-                        FROM duckdb_views()
-                        where schema_name not in ('information_schema', 'pg_catalog', 'localmemdb')
-                        and view_name not in ('duckdb_columns','duckdb_constraints','duckdb_databases','duckdb_indexes','duckdb_schemas','duckdb_tables','duckdb_types','duckdb_views','pragma_database_list','sqlite_master','sqlite_schema','sqlite_temp_master','sqlite_temp_schema')
-                        and database_name = '{database}'
-                        """
-            ).fetchone()[0]
-            results = (
-                f"Here are all tables: \n{tables} \n\n Here are all views: {views}"
-            )
-            return [types.TextContent(type="text", text=str(results))]
-        if name == "query":
-            try:
-                if not os.getenv("motherduck_token"):
-                    raise ValueError(
-                        "Please set the `motherduck_token` environment variable."
-                    )
-                conn = duckdb.connect(
-                    "md:",
-                    config={
-                        "custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"
-                    },
-                )
-                results = conn.execute(arguments["query"]).fetchall()
-            except Exception as e:
-                raise ValueError("Error querying the database:" + str(e))
-            return [types.TextContent(type="text", text=str(results))]
+        except Exception as e:
+            logger.error(f"Error executing tool {name}: {e}")
+            raise ValueError(f"Error executing tool {name}: {str(e)}")
 
     # Run the server using stdin/stdout streams
     async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
