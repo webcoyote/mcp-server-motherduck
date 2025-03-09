@@ -2,25 +2,6 @@
 
 An MCP server implementation that integrates MotherDuck and local DuckDB, providing SQL analytics capabilities to Claude.
 
-## Installation
-
-To install and run the server:
-
-1. Install the package using `uvx`:
-
-   ```bash
-   pip install uvx
-   uvx install mcp-server-motherduck
-   ```
-
-2. Start the server manually (for testing):
-
-   ```bash
-   uvx mcp-server-motherduck
-   ```
-
-The server is designed to be run by tools like Claude Desktop or Cursor, but you can start it manually for testing purposes.
-
 ## Features
 
 - **Hybrid execution**: query data from both local DuckDB and cloud-based MotherDuck seamlessly
@@ -143,11 +124,46 @@ Once configured, you can ask Claude to run queries like:
 
 ## Testing
 
+The server is designed to be run by tools like Claude Desktop or Cursor, but you can start it manually for testing purposes.
+
+There are multiple ways to install and run the server:
+
+### Option 1: Using `uvx`
+
+1. Install the package using `uvx`:
+
+   ```bash
+   pip install uvx
+   uvx install mcp-server-motherduck
+   ```
+
+2. Start the server manually (for testing):
+
+   ```bash
+   uvx mcp-server-motherduck
+   ```
+
+### Option 2: Using `pip`
+
+1. Install the package directly using pip:
+
+   ```bash
+   pip install -e .
+   ```
+
+2. Start the server manually:
+
+   ```bash
+   mcp-server-motherduck
+   ```
+
 When testing the server manually, you can specify which database to connect to using the `--db-path` parameter:
 
 1. **Default MotherDuck database**:
+   - To connect to the default MotherDuck database, you will need to export the `motherduck_token` environment variable.
 
    ```bash
+   export motherduck_token=<your_motherduck_token>
    uvx mcp-server-motherduck --db-path md:
    ```
 

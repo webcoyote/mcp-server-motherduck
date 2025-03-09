@@ -24,14 +24,14 @@ class DatabaseClient:
 
         logger.info(f"Connecting to {self.db_type} database: `{self.db_path}`")
 
-        print(f"🔌 Connecting to {self.db_type.upper()} database: {self.db_path}")
+        print(f"🔌 Connecting to {self.db_type} database: {self.db_path}")
 
         conn = duckdb.connect(
             self.db_path,
             config={"custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"},
         )
 
-        print(f"✅ Successfully connected to {self.db_type.upper()} database")
+        print(f"✅ Successfully connected to {self.db_type} database")
 
         return conn
 

@@ -14,13 +14,14 @@ def main():
     args = parser.parse_args()
 
     # Print welcome message
-    print("\n🦆 MotherDuck MCP Server v" + server.SERVER_VERSION)
-    print("Ready to execute SQL queries via DuckDB/MotherDuck")
+    print("\n🦆 MotherDuck MCP Server v" + server.SERVER_VERSION, flush=True)
+    print("Ready to execute SQL queries via DuckDB/MotherDuck", flush=True)
     print(
         "Server running in "
-        + ("MotherDuck mode" if args.db_path and args.db_path.startswith("md:") else "DuckDB mode")
+        + ("MotherDuck mode" if args.db_path and args.db_path.startswith("md:") else "DuckDB mode"),
+        flush=True,
     )
-    print("Waiting for client connection...\n")
+    print("Waiting for client connection...\n", flush=True)
 
     # Run the server
     asyncio.run(server.main(db_path=args.db_path))
