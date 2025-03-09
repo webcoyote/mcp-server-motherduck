@@ -1,4 +1,4 @@
-# mcp-server-motherduck
+# MotherDuck MCP Server
 
 An MCP server implementation that integrates MotherDuck and local DuckDB, providing SQL analytics capabilities to Claude.
 
