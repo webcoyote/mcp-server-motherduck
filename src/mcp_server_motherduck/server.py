@@ -15,7 +15,7 @@ logger = logging.getLogger("mcp_server_motherduck")
 
 
 class DatabaseClient:
-    def __init__(self, db_path: str = None):
+    def __init__(self, db_path: str | None = None):
         self.db_path, self.db_type = self._resolve_db_path_type(db_path)
         self.conn = self._initialize_connection()
 
@@ -24,13 +24,19 @@ class DatabaseClient:
 
         logger.info(f"Connecting to {self.db_type} database: `{self.db_path}`")
 
-        return duckdb.connect(
+        print(f"🔌 Connecting to {self.db_type.upper()} database: {self.db_path}")
+
+        conn = duckdb.connect(
             self.db_path,
             config={"custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"},
         )
 
+        print(f"✅ Successfully connected to {self.db_type.upper()} database")
+
+        return conn
+
     def _resolve_db_path_type(
-        self, db_path: str = None
+        self, db_path: str | None = None
     ) -> tuple[str, Literal["duckdb", "motherduck"]]:
         """Resolve and validate the database path"""
         # Use MotherDuck if token is available and no path specified
@@ -49,9 +55,7 @@ class DatabaseClient:
         # Handle local database paths
         if db_path:
             if not os.path.exists(db_path):
-                raise FileNotFoundError(
-                    f"The database path `{db_path}` does not exist."
-                )
+                raise FileNotFoundError(f"The database path `{db_path}` does not exist.")
             return db_path, "duckdb"
 
         # Default to in-memory database
@@ -59,12 +63,16 @@ class DatabaseClient:
 
     def query(self, query: str) -> str:
         try:
-            return str(self.conn.execute(query).fetchall())
+            print(f"🔍 Executing query: {query[:60]}{'...' if len(query) > 60 else ''}")
+            result = str(self.conn.execute(query).fetchall())
+            print("✅ Query executed successfully")
+            return result
         except Exception as e:
             logger.error(f"Database error executing query: {e}")
+            print(f"❌ Error executing query: {e}")
             raise ValueError(f"Error executing query: {e}")
 
-    def mcp_config(self) -> str:
+    def mcp_config(self) -> dict[str, str]:
         """Used for debugging purposes to show the current MCP config"""
         return {
             "current_working_directory": os.getcwd(),
@@ -173,8 +181,12 @@ async def main(db_path: str):
         logger.info(f"Calling tool: {name}::{arguments}")
         try:
             if name == "query":
+                if arguments is None:
+                    return [types.TextContent(type="text", text="Error: No query provided")]
                 tool_response = db_client.query(arguments["query"])
                 return [types.TextContent(type="text", text=str(tool_response))]
+
+            return [types.TextContent(type="text", text=f"Unsupported tool: {name}")]
 
         except Exception as e:
             logger.error(f"Error executing tool {name}: {e}")
@@ -194,3 +206,7 @@ async def main(db_path: str):
                 ),
             ),
         )
+
+        # This will only be reached when the server is shutting down
+        print("\n🦆 MotherDuck MCP Server shutting down...")
+        print(f"Database connection to {db_client.db_path} closed.")
