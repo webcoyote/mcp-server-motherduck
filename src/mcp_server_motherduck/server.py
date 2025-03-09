@@ -3,13 +3,15 @@ import logging
 import duckdb
 from pydantic import AnyUrl
 from typing import Literal
+import io
+from contextlib import redirect_stdout
 import mcp.server.stdio
 import mcp.types as types
 from mcp.server import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
-SERVER_VERSION = "0.3"
+SERVER_VERSION = "0.3.1"
 
 logger = logging.getLogger("mcp_server_motherduck")
 
@@ -59,7 +61,14 @@ class DatabaseClient:
 
     def query(self, query: str) -> str:
         try:
-            return str(self.conn.execute(query).fetchall())
+            # Markdown version of the output
+            return self.conn.execute(query).fetchdf().to_markdown()
+
+            # Duckbox version of the outpu
+            #buffer = io.StringIO()
+            #with redirect_stdout(buffer):
+            #    self.conn.sql(query).show(max_rows=100,max_col_width=20)
+            #return buffer.getvalue()
         except Exception as e:
             logger.error(f"Database error executing query: {e}")
             raise ValueError(f"Error executing query: {e}")
