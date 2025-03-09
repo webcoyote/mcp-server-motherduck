@@ -169,7 +169,6 @@ When testing the server manually, you can specify which database to connect to u
    uvx mcp-server-motherduck
    ```
 
-
 If you don't specify a database path but have set the `motherduck_token` environment variable, the server will automatically connect to the default MotherDuck database (`md:`).
 
 ## Troubleshooting
