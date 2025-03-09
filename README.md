@@ -4,11 +4,11 @@ An MCP server implementation that integrates MotherDuck and local DuckDB, provid
 
 ## Features
 
-- **Hybrid execution**: query data from both local DuckDB and cloud-based MotherDuck seamlessly
-- **Cloud storage integration**: access data stored in Amazon S3 or other cloud storage
-- **Data sharing**: share database snapshots with colleagues
-- **SQL analytics**: leverage the full power of DuckDB's SQL dialect
-- **Serverless architecture**: no need to configure instances or clusters
+- **Hybrid execution**: query data from both cloud-based MotherDuck and local DuckDB
+- **Cloud storage integration**: access data stored in Amazon S3 or other cloud storage thanks to MotherDuck's integrations
+- **Data sharing**: create and share databases
+- **SQL analytics**: use DuckDB's SQL dialect to query any size of data directly from Claude
+- **Serverless architecture**: run analytics without needing to configure instances or clusters
 
 ## Components
 
@@ -89,17 +89,17 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 
    ```json
    {
-     "mcpServers": {
-       "mcp-server-motherduck": {
-         "command": "uvx",
-         "args": ["mcp-server-motherduck"],
-         "env": {
-           "motherduck_token": "YOUR_MOTHERDUCK_TOKEN_HERE",
-           "HOME": "YOUR_HOME_FOLDER_PATH"
-         }
-       }
-     }
-   }
+    "mcpServers": {
+      "mcp-server-motherduck": {
+        "command": "uvx",
+        "args": ["mcp-server-motherduck"],
+        "env": {
+          "motherduck_token": "YOUR_MOTHERDUCK_TOKEN_HERE",
+            "HOME": "YOUR_HOME_FOLDER_PATH"
+          }
+        }
+      }
+    }
    ```
 
 4. After adding the server, it should appear in the list of MCP servers. You may need to press the refresh button in the top right corner of the MCP server to populate the tool list.
