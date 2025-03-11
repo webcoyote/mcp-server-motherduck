@@ -73,46 +73,6 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 - The `HOME` environment variable is required for DuckDB to function properly.
 - MCP tools are only available to the Agent in Composer
 
-### Usage with Cursor
-
-1. Install Cursor from [cursor.sh](https://cursor.sh) if you haven't already
-
-2. Configure the MCP server in Cursor:
-   - Go to `Cursor Settings` > `Features` > `MCP`
-   - Click on the `+ Add New MCP Server` button
-   - Fill out the form:
-     - **Name**: `mcp-server-motherduck`
-     - **Type**: `command`
-     - **Command**: `uvx mcp-server-motherduck motherduck_token=YOUR_MOTHERDUCK_TOKEN_HERE HOME=YOUR_HOME_FOLDER_PATH`
-     - Click `Add Server`
-
-3. Alternatively, you can configure a project-specific MCP by creating a `.cursor/mcp.json` file in your project root:
-
-   ```json
-   {
-    "mcpServers": {
-      "mcp-server-motherduck": {
-        "command": "uvx",
-        "args": ["mcp-server-motherduck"],
-        "env": {
-          "motherduck_token": "YOUR_MOTHERDUCK_TOKEN_HERE",
-          "HOME": "YOUR_HOME_FOLDER_PATH"
-        }
-      }
-    }
-   }
-   ```
-
-4. After adding the server, it should appear in the list of MCP servers. You may need to press the refresh button in the top right corner of the MCP server to populate the tool list.
-
-5. Use the MCP tools in Cursor's Composer Agent by asking it to run SQL queries against MotherDuck or DuckDB.
-
-**Important Notes**:
-
-- Replace `YOUR_MOTHERDUCK_TOKEN_HERE` with your actual MotherDuck token
-- Replace `YOUR_HOME_FOLDER_PATH` with the path to your home directory (needed by DuckDB for file operations). For example, on macOS, it would be `/Users/your_username`
-- The `HOME` environment variable is required for DuckDB to function properly.
-- MCP tools are only available to the Agent in Composer
 
 ## Example Queries
 
@@ -134,8 +94,7 @@ There are multiple ways to install and run the server:
 1. Install the package using `uvx`:
 
    ```bash
-   pip install uvx
-   uvx install mcp-server-motherduck
+   uvx run .
    ```
 
 2. Start the server manually (for testing):
