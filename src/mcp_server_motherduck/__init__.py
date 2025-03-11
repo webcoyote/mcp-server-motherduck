@@ -10,7 +10,6 @@ def main():
         "--db-path",
         help="Path to local DuckDB database file",
     )
-
     args = parser.parse_args()
 
     # Print welcome message

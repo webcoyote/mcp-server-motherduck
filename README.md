@@ -69,8 +69,9 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 **Important Notes**:
 
 - Replace `YOUR_MOTHERDUCK_TOKEN_HERE` with your actual MotherDuck token
-- Replace `YOUR_HOME_FOLDER_PATH` with the path to your home directory (needed by DuckDB for file operations). For example, on macOS, it would be `~/Users/your_username`
-- The `HOME` environment variable is required for DuckDB to function properly
+- Replace `YOUR_HOME_FOLDER_PATH` with the path to your home directory (needed by DuckDB for file operations). For example, on macOS, it would be `/Users/your_username`
+- The `HOME` environment variable is required for DuckDB to function properly.
+- MCP tools are only available to the Agent in Composer
 
 ### Usage with Cursor
 
@@ -80,12 +81,12 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
    - Go to `Cursor Settings` > `Features` > `MCP`
    - Click on the `+ Add New MCP Server` button
    - Fill out the form:
-     - **Name**: `mcp-server-motherduck` (or any name you prefer)
-     - **Type**: Select `stdio`
-     - **Command**: `uvx mcp-server-motherduck`
-   - Click `Add Server`
+     - **Name**: `mcp-server-motherduck`
+     - **Type**: `command`
+     - **Command**: `uvx mcp-server-motherduck motherduck_token=YOUR_MOTHERDUCK_TOKEN_HERE HOME=YOUR_HOME_FOLDER_PATH`
+     - Click `Add Server`
 
-3. Alternatively, you can configure project-specific MCP settings by creating a `.cursor/mcp.json` file in your project root:
+3. Alternatively, you can configure a project-specific MCP by creating a `.cursor/mcp.json` file in your project root:
 
    ```json
    {
@@ -95,11 +96,11 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
         "args": ["mcp-server-motherduck"],
         "env": {
           "motherduck_token": "YOUR_MOTHERDUCK_TOKEN_HERE",
-            "HOME": "YOUR_HOME_FOLDER_PATH"
-          }
+          "HOME": "YOUR_HOME_FOLDER_PATH"
         }
       }
     }
+   }
    ```
 
 4. After adding the server, it should appear in the list of MCP servers. You may need to press the refresh button in the top right corner of the MCP server to populate the tool list.
@@ -110,7 +111,7 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 
 - Replace `YOUR_MOTHERDUCK_TOKEN_HERE` with your actual MotherDuck token
 - Replace `YOUR_HOME_FOLDER_PATH` with the path to your home directory (needed by DuckDB for file operations). For example, on macOS, it would be `/Users/your_username`
-- The `HOME` environment variable is required for DuckDB to function properly
+- The `HOME` environment variable is required for DuckDB to function properly.
 - MCP tools are only available to the Agent in Composer
 
 ## Example Queries
@@ -167,6 +168,12 @@ When testing the server manually, you can specify which database to connect to u
    uvx mcp-server-motherduck --db-path md:
    ```
 
+   - Alternatively, you can pass the token directly:
+
+   ```bash
+   uvx mcp-server-motherduck --db-path md: --token <your_motherduck_token>
+   ```
+
 2. **Specific MotherDuck database**:
 
    ```bash
@@ -186,6 +193,13 @@ When testing the server manually, you can specify which database to connect to u
    ```
 
 If you don't specify a database path but have set the `motherduck_token` environment variable, the server will automatically connect to the default MotherDuck database (`md:`).
+
+### Environment Variables
+
+The server uses the following environment variables:
+
+- `motherduck_token`: Your MotherDuck authentication token (can also be passed via `--token` parameter)
+- `HOME`: Directory used by DuckDB for file operations (if not set, a temporary directory will be created automatically)
 
 ## Troubleshooting
 
