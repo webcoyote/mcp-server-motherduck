@@ -11,15 +11,21 @@ from mcp.server import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
-SERVER_VERSION = "0.3.1"
+SERVER_VERSION = "0.3.2"
 
 logger = logging.getLogger("mcp_server_motherduck")
 
 
 class DatabaseClient:
-    def __init__(self, db_path: str = None):
+    def __init__(
+        self,
+        db_path: str = None,
+        result_format: Literal["markdown", "duckbox", "text"] = "markdown",
+    ):
         self.db_path, self.db_type = self._resolve_db_path_type(db_path)
         self.conn = self._initialize_connection()
+
+        self.result_format = result_format
 
     def _initialize_connection(self) -> duckdb.DuckDBPyConnection:
         """Initialize connection to the MotherDuck or DuckDB database"""
@@ -61,14 +67,19 @@ class DatabaseClient:
 
     def query(self, query: str) -> str:
         try:
-            # Markdown version of the output
-            return self.conn.execute(query).fetchdf().to_markdown()
+            if self.result_format == "markdown":
+                # Markdown version of the output
+                return self.conn.execute(query).fetchdf().to_markdown()
+            elif self.result_format == "duckbox":
+                # Duckbox version of the output
+                buffer = io.StringIO()
+                with redirect_stdout(buffer):
+                    self.conn.sql(query).show(max_rows=100, max_col_width=20)
+                return buffer.getvalue()
+            else:
+                # Text version of the output
+                return str(self.conn.execute(query).fetchall())
 
-            # Duckbox version of the outpu
-            #buffer = io.StringIO()
-            #with redirect_stdout(buffer):
-            #    self.conn.sql(query).show(max_rows=100,max_col_width=20)
-            #return buffer.getvalue()
         except Exception as e:
             logger.error(f"Database error executing query: {e}")
             raise ValueError(f"Error executing query: {e}")
