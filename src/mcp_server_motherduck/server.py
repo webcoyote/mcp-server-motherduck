@@ -11,6 +11,7 @@ from mcp.server import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
+
 SERVER_VERSION = "0.3.2"
 
 logger = logging.getLogger("mcp_server_motherduck")
