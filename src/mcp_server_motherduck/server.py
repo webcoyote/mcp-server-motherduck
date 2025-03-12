@@ -12,7 +12,7 @@ from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
 
-SERVER_VERSION = "0.3.2"
+SERVER_VERSION = "0.3.3"
 
 logger = logging.getLogger("mcp_server_motherduck")
 
@@ -94,10 +94,10 @@ class DatabaseClient:
         }
 
 
-async def main(db_path: str):
+async def main(db_path: str, result_format: Literal["markdown", "duckbox", "text"] = "markdown"):
     logger.info(f"Starting MotherDuck MCP Server with DB path: {db_path}")
     server = Server("mcp-server-motherduck")
-    db_client = DatabaseClient(db_path=db_path)
+    db_client = DatabaseClient(db_path=db_path, result_format=result_format)
 
     logger.info("Registering handlers")
 
