@@ -85,15 +85,10 @@ Once configured, you can ask Claude to run queries like:
 
 ## Testing
 
-The server is designed to be run by tools like Claude Desktop, but you can start it manually for testing purposes. To install and run the the package using `uvx`:
-
-```bash
-uvx .
-```
-
-When testing the server manually, you can specify which database to connect to using the `--db-path` parameter:
+The server is designed to be run by tools like Claude Desktop, but you can start it manually for testing purposes. When testing the server manually, you can specify which database to connect to using the `--db-path` parameter:
 
 1. **Default MotherDuck database**:
+
    - To connect to the default MotherDuck database, you will need to export the `motherduck_token` environment variable.
 
    ```bash
@@ -104,7 +99,7 @@ When testing the server manually, you can specify which database to connect to u
    - Alternatively, you can pass the token directly:
 
    ```bash
-   uvx mcp-server-motherduck --db-path md: motherduck_token=<your_motherduck_token>
+   motherduck_token=<your_motherduck_token> uvx mcp-server-motherduck --db-path md:
    ```
 
 2. **Specific MotherDuck database**:

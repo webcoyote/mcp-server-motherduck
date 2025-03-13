@@ -12,7 +12,7 @@ from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
 
-SERVER_VERSION = "0.3.3"
+SERVER_VERSION = "0.3.4"
 
 logger = logging.getLogger("mcp_server_motherduck")
 
@@ -24,8 +24,9 @@ class DatabaseClient:
         result_format: Literal["markdown", "duckbox", "text"] = "markdown",
     ):
         self.db_path, self.db_type = self._resolve_db_path_type(db_path)
-        self.conn = self._initialize_connection()
+        logger.info(f"Database client initialized in `{self.db_type}` mode")
 
+        self.conn = self._initialize_connection()
         self.result_format = result_format
 
     def _initialize_connection(self) -> duckdb.DuckDBPyConnection:
@@ -62,7 +63,9 @@ class DatabaseClient:
         # Handle local database paths
         if db_path:
             if not os.path.exists(db_path):
-                raise FileNotFoundError(f"The database path `{db_path}` does not exist.")
+                raise FileNotFoundError(
+                    f"The database path `{db_path}` does not exist."
+                )
             return db_path, "duckdb"
 
         # Default to in-memory database
@@ -72,7 +75,9 @@ class DatabaseClient:
         try:
             if self.result_format == "markdown":
                 # Markdown version of the output
-                logger.info(f"🔍 Executing query: {query[:60]}{'...' if len(query) > 60 else ''}")
+                logger.info(
+                    f"🔍 Executing query: {query[:60]}{'...' if len(query) > 60 else ''}"
+                )
                 result = self.conn.execute(query).fetchdf().to_markdown()
                 logger.info("✅ Query executed successfully")
                 return result
@@ -98,7 +103,9 @@ class DatabaseClient:
         }
 
 
-async def main(db_path: str, result_format: Literal["markdown", "duckbox", "text"] = "markdown"):
+async def main(
+    db_path: str, result_format: Literal["markdown", "duckbox", "text"] = "markdown"
+):
     logger.info(f"Starting MotherDuck MCP Server with DB path: {db_path}")
     server = Server("mcp-server-motherduck")
     db_client = DatabaseClient(db_path=db_path, result_format=result_format)
@@ -199,7 +206,9 @@ async def main(db_path: str, result_format: Literal["markdown", "duckbox", "text
         try:
             if name == "query":
                 if arguments is None:
-                    return [types.TextContent(type="text", text="Error: No query provided")]
+                    return [
+                        types.TextContent(type="text", text="Error: No query provided")
+                    ]
                 tool_response = db_client.query(arguments["query"])
                 return [types.TextContent(type="text", text=str(tool_response))]
 

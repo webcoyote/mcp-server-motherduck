@@ -4,13 +4,11 @@ import argparse
 import logging
 
 logger = logging.getLogger("mcp_server_motherduck")
+logging.basicConfig(level=logging.INFO, format="[%(name)s] %(levelname)s - %(message)s")
 
 
 def main():
     """Main entry point for the package."""
-    logging.basicConfig(
-        level=logging.INFO, format="%(Y-%m-%d %H:%M)s - %(levelname)s - %(message)s"
-    )
 
     parser = argparse.ArgumentParser(description="MotherDuck MCP Server")
     parser.add_argument(
@@ -26,13 +24,8 @@ def main():
     )
 
     args = parser.parse_args()
-
-    logger.info("\n🦆 MotherDuck MCP Server v" + server.SERVER_VERSION)
+    logger.info("🦆 MotherDuck MCP Server v" + server.SERVER_VERSION)
     logger.info("Ready to execute SQL queries via DuckDB/MotherDuck")
-    logger.info(
-        "Server running in "
-        + ("MotherDuck mode" if args.db_path and args.db_path.startswith("md:") else "DuckDB mode")
-    )
     logger.info("Waiting for client connection...\n")
 
     asyncio.run(server.main(db_path=args.db_path, result_format=args.result_format))
