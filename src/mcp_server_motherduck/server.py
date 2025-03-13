@@ -3,21 +3,30 @@ import logging
 import duckdb
 from pydantic import AnyUrl
 from typing import Literal
+import io
+from contextlib import redirect_stdout
 import mcp.server.stdio
 import mcp.types as types
 from mcp.server import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
-SERVER_VERSION = "0.3"
+
+SERVER_VERSION = "0.3.3"
 
 logger = logging.getLogger("mcp_server_motherduck")
 
 
 class DatabaseClient:
-    def __init__(self, db_path: str | None = None):
+    def __init__(
+        self,
+        db_path: str | None = None,
+        result_format: Literal["markdown", "duckbox", "text"] = "markdown",
+    ):
         self.db_path, self.db_type = self._resolve_db_path_type(db_path)
         self.conn = self._initialize_connection()
+
+        self.result_format = result_format
 
     def _initialize_connection(self) -> duckdb.DuckDBPyConnection:
         """Initialize connection to the MotherDuck or DuckDB database"""
@@ -63,10 +72,21 @@ class DatabaseClient:
 
     def query(self, query: str) -> str:
         try:
-            print(f"🔍 Executing query: {query[:60]}{'...' if len(query) > 60 else ''}")
-            result = str(self.conn.execute(query).fetchall())
-            print("✅ Query executed successfully")
-            return result
+            if self.result_format == "markdown":
+                # Markdown version of the output
+                print(f"🔍 Executing query: {query[:60]}{'...' if len(query) > 60 else ''}")
+                return self.conn.execute(query).fetchdf().to_markdown()
+                print("✅ Query executed successfully")
+            elif self.result_format == "duckbox":
+                # Duckbox version of the output
+                buffer = io.StringIO()
+                with redirect_stdout(buffer):
+                    self.conn.sql(query).show(max_rows=100, max_col_width=20)
+                return buffer.getvalue()
+            else:
+                # Text version of the output
+                return str(self.conn.execute(query).fetchall())
+
         except Exception as e:
             logger.error(f"Database error executing query: {e}")
             print(f"❌ Error executing query: {e}")
@@ -81,10 +101,10 @@ class DatabaseClient:
         }
 
 
-async def main(db_path: str):
+async def main(db_path: str, result_format: Literal["markdown", "duckbox", "text"] = "markdown"):
     logger.info(f"Starting MotherDuck MCP Server with DB path: {db_path}")
     server = Server("mcp-server-motherduck")
-    db_client = DatabaseClient(db_path=db_path)
+    db_client = DatabaseClient(db_path=db_path, result_format=result_format)
 
     logger.info("Registering handlers")
 

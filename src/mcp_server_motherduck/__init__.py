@@ -10,9 +10,16 @@ def main():
         "--db-path",
         help="Path to local DuckDB database file",
     )
+    # This is experimental and will change in the future
+    parser.add_argument(
+        "--result-format",
+        help="Format of the output",
+        default="markdown",
+        choices=["markdown", "duckbox", "text"],
+    )
+
     args = parser.parse_args()
 
-    # Print welcome message
     print("\n🦆 MotherDuck MCP Server v" + server.SERVER_VERSION, flush=True)
     print("Ready to execute SQL queries via DuckDB/MotherDuck", flush=True)
     print(
@@ -22,8 +29,7 @@ def main():
     )
     print("Waiting for client connection...\n", flush=True)
 
-    # Run the server
-    asyncio.run(server.main(db_path=args.db_path))
+    asyncio.run(server.main(db_path=args.db_path, result_format=args.result_format))
 
 
 # Optionally expose other important items at package level
