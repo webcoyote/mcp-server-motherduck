@@ -17,10 +17,12 @@ def main():
     )
     parser.add_argument(
         "--motherduck-token",
+        default=None,
         help="Access token to use for MotherDuck database connections",
     )
     parser.add_argument(
         "--home-dir",
+        default=None,
         help="Home directory for DuckDB",
     )
     # This is experimental and will change in the future
@@ -36,7 +38,14 @@ def main():
     logger.info("Ready to execute SQL queries via DuckDB/MotherDuck")
     logger.info("Waiting for client connection...\n")
 
-    asyncio.run(server.main(db_path=args.db_path, result_format=args.result_format))
+    asyncio.run(
+        server.main(
+            db_path=args.db_path,
+            motherduck_token=args.motherduck_token,
+            result_format=args.result_format,
+            home_dir=args.home_dir,
+        )
+    )
 
 
 # Optionally expose other important items at package level

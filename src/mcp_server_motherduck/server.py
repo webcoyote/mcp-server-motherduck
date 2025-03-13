@@ -119,11 +119,19 @@ class DatabaseClient:
 
 
 async def main(
-    db_path: str, result_format: Literal["markdown", "duckbox", "text"] = "markdown"
+    db_path: str,
+    motherduck_token: str | None = None,
+    result_format: Literal["markdown", "duckbox", "text"] = "markdown",
+    home_dir: str | None = None,
 ):
     logger.info(f"Starting MotherDuck MCP Server with DB path: {db_path}")
     server = Server("mcp-server-motherduck")
-    db_client = DatabaseClient(db_path=db_path, result_format=result_format)
+    db_client = DatabaseClient(
+        db_path=db_path,
+        result_format=result_format,
+        motherduck_token=motherduck_token,
+        home_dir=home_dir,
+    )
 
     logger.info("Registering handlers")
 
