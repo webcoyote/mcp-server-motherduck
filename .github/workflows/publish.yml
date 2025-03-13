@@ -1,0 +1,58 @@
+name: Publish Python Package
+
+on:
+  release:
+    types: [published]
+    
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: "pyproject.toml"
+    
+    - name: Extract version from tag
+      id: get_version
+      run: |
+        TAG_VERSION="${{ github.ref_name }}"
+        VERSION="${TAG_VERSION#v}"
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Using version: $VERSION from tag $TAG_VERSION"
+    
+    - name: Update version in files
+      run: |
+        # Replace version in pyproject.toml with the tag version
+        sed -i "s/^version = .*/version = \"$VERSION\"/" pyproject.toml
+        echo "Updated pyproject.toml with version $VERSION"
+        
+        # Update SERVER_VERSION in Python file
+        sed -i "s/^SERVER_VERSION = .*/SERVER_VERSION = \"$VERSION\"/" src/mcp_server_motherduck/server.py
+        echo "Updated SERVER_VERSION in server.py to $VERSION"
+    
+    - name: Install the project
+      run: uv sync
+    
+    - name: Build package
+      run: uv build
+    
+    - name: Publish package
+      env:
+        PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        if [ -n "$PYPI_TOKEN" ]; then
+          uv publish --token $PYPI_TOKEN
+        else
+          # Fallback to trusted publisher if token not available
+          uv publish
+        fi
