@@ -12,7 +12,7 @@ from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
 
-SERVER_VERSION = "0.3.3"
+SERVER_VERSION = "0.3.4"
 
 logger = logging.getLogger("mcp_server_motherduck")
 
@@ -20,26 +20,31 @@ logger = logging.getLogger("mcp_server_motherduck")
 class DatabaseClient:
     def __init__(
         self,
-        db_path: str = None,
+        db_path: str | None = None,
         result_format: Literal["markdown", "duckbox", "text"] = "markdown",
     ):
         self.db_path, self.db_type = self._resolve_db_path_type(db_path)
-        self.conn = self._initialize_connection()
+        logger.info(f"Database client initialized in `{self.db_type}` mode")
 
+        self.conn = self._initialize_connection()
         self.result_format = result_format
 
     def _initialize_connection(self) -> duckdb.DuckDBPyConnection:
         """Initialize connection to the MotherDuck or DuckDB database"""
 
-        logger.info(f"Connecting to {self.db_type} database: `{self.db_path}`")
+        logger.info(f"🔌 Connecting to {self.db_type} database: {self.db_path}")
 
-        return duckdb.connect(
+        conn = duckdb.connect(
             self.db_path,
             config={"custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"},
         )
 
+        logger.info(f"✅ Successfully connected to {self.db_type} database")
+
+        return conn
+
     def _resolve_db_path_type(
-        self, db_path: str = None
+        self, db_path: str | None = None
     ) -> tuple[str, Literal["duckdb", "motherduck"]]:
         """Resolve and validate the database path"""
         # Use MotherDuck if token is available and no path specified
@@ -70,7 +75,12 @@ class DatabaseClient:
         try:
             if self.result_format == "markdown":
                 # Markdown version of the output
-                return self.conn.execute(query).fetchdf().to_markdown()
+                logger.info(
+                    f"🔍 Executing query: {query[:60]}{'...' if len(query) > 60 else ''}"
+                )
+                result = self.conn.execute(query).fetchdf().to_markdown()
+                logger.info("✅ Query executed successfully")
+                return result
             elif self.result_format == "duckbox":
                 # Duckbox version of the output
                 buffer = io.StringIO()
@@ -82,10 +92,9 @@ class DatabaseClient:
                 return str(self.conn.execute(query).fetchall())
 
         except Exception as e:
-            logger.error(f"Database error executing query: {e}")
-            raise ValueError(f"Error executing query: {e}")
+            raise ValueError(f"❌ Error executing query: {e}")
 
-    def mcp_config(self) -> str:
+    def mcp_config(self) -> dict[str, str]:
         """Used for debugging purposes to show the current MCP config"""
         return {
             "current_working_directory": os.getcwd(),
@@ -94,7 +103,9 @@ class DatabaseClient:
         }
 
 
-async def main(db_path: str, result_format: Literal["markdown", "duckbox", "text"] = "markdown"):
+async def main(
+    db_path: str, result_format: Literal["markdown", "duckbox", "text"] = "markdown"
+):
     logger.info(f"Starting MotherDuck MCP Server with DB path: {db_path}")
     server = Server("mcp-server-motherduck")
     db_client = DatabaseClient(db_path=db_path, result_format=result_format)
@@ -194,8 +205,14 @@ async def main(db_path: str, result_format: Literal["markdown", "duckbox", "text
         logger.info(f"Calling tool: {name}::{arguments}")
         try:
             if name == "query":
+                if arguments is None:
+                    return [
+                        types.TextContent(type="text", text="Error: No query provided")
+                    ]
                 tool_response = db_client.query(arguments["query"])
                 return [types.TextContent(type="text", text=str(tool_response))]
+
+            return [types.TextContent(type="text", text=f"Unsupported tool: {name}")]
 
         except Exception as e:
             logger.error(f"Error executing tool {name}: {e}")
@@ -215,3 +232,7 @@ async def main(db_path: str, result_format: Literal["markdown", "duckbox", "text
                 ),
             ),
         )
+
+        # This will only be reached when the server is shutting down
+        logger.info("\n🦆 MotherDuck MCP Server shutting down...")
+        logger.info(f"Database connection to {db_client.db_path} closed.")
