@@ -26,7 +26,7 @@ The server offers one tool:
   - **Inputs**:
     - `query` (string, required): The SQL query to execute
 
-All interactions with both DuckDB and MotherDuck are done through writing SQL queries, providing a unified interface for data analysis.
+All interactions with both DuckDB and MotherDuck are done through writing SQL queries.
 
 ## Getting Started
 
