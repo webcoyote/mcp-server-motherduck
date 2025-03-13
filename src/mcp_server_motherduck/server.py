@@ -12,7 +12,7 @@ from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
 
-SERVER_VERSION = "0.3.4"
+SERVER_VERSION = "0.3.5-rc.1"
 
 logger = logging.getLogger("mcp_server_motherduck")
 
@@ -21,10 +21,18 @@ class DatabaseClient:
     def __init__(
         self,
         db_path: str | None = None,
+        motherduck_token: str | None = None,
         result_format: Literal["markdown", "duckbox", "text"] = "markdown",
+        home_dir: str | None = None,
     ):
-        self.db_path, self.db_type = self._resolve_db_path_type(db_path)
+        self.db_path, self.db_type = self._resolve_db_path_type(
+            db_path, motherduck_token
+        )
         logger.info(f"Database client initialized in `{self.db_type}` mode")
+
+        # Set the home directory for DuckDB
+        if home_dir:
+            os.environ["HOME"] = home_dir
 
         self.conn = self._initialize_connection()
         self.result_format = result_format
@@ -44,21 +52,28 @@ class DatabaseClient:
         return conn
 
     def _resolve_db_path_type(
-        self, db_path: str | None = None
+        self, db_path: str | None = None, motherduck_token: str | None = None
     ) -> tuple[str, Literal["duckdb", "motherduck"]]:
         """Resolve and validate the database path"""
-        # Use MotherDuck if token is available and no path specified
-        if db_path is None and os.getenv("motherduck_token"):
-            logger.info("Using MotherDuck token to connect to database `md:`")
-            return "md:", "motherduck"
-
         # Handle MotherDuck paths
         if db_path and (db_path == "md:" or db_path.startswith("md:")):
-            if not os.getenv("motherduck_token"):
+            if motherduck_token:
+                os.environ["motherduck_token"] = motherduck_token
+                logger.info("Using MotherDuck token to connect to database `md:`")
+                return "md:", "motherduck"
+            elif os.getenv("motherduck_token"):
+                logger.info("Using MotherDuck token to connect to database `md:`")
+                return "md:", "motherduck"
+            else:
                 raise ValueError(
-                    "Please set the `motherduck_token` environment variable when using `md:` as db_path."
+                    "Please set the `motherduck_token` as an environment variable or pass it as an argument with `--motherduck-token` when using `md:` as db_path."
                 )
-            return db_path, "motherduck"
+
+        # Use MotherDuck if token is available and no path specified
+        if db_path is None and motherduck_token:
+            os.environ["motherduck_token"] = motherduck_token
+            logger.info("Using MotherDuck token to connect to database `md:`")
+            return "md:", "motherduck"
 
         # Handle local database paths
         if db_path:

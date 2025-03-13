@@ -15,6 +15,14 @@ def main():
         "--db-path",
         help="Path to local DuckDB database file",
     )
+    parser.add_argument(
+        "--motherduck-token",
+        help="Access token to use for MotherDuck database connections",
+    )
+    parser.add_argument(
+        "--home-dir",
+        help="Home directory for DuckDB",
+    )
     # This is experimental and will change in the future
     parser.add_argument(
         "--result-format",
