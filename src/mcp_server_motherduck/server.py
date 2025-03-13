@@ -31,16 +31,14 @@ class DatabaseClient:
     def _initialize_connection(self) -> duckdb.DuckDBPyConnection:
         """Initialize connection to the MotherDuck or DuckDB database"""
 
-        logger.info(f"Connecting to {self.db_type} database: `{self.db_path}`")
-
-        print(f"🔌 Connecting to {self.db_type} database: {self.db_path}")
+        logger.info(f"🔌 Connecting to {self.db_type} database: {self.db_path}")
 
         conn = duckdb.connect(
             self.db_path,
             config={"custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"},
         )
 
-        print(f"✅ Successfully connected to {self.db_type} database")
+        logger.info(f"✅ Successfully connected to {self.db_type} database")
 
         return conn
 
@@ -74,23 +72,22 @@ class DatabaseClient:
         try:
             if self.result_format == "markdown":
                 # Markdown version of the output
-                print(f"🔍 Executing query: {query[:60]}{'...' if len(query) > 60 else ''}")
-                return self.conn.execute(query).fetchdf().to_markdown()
-                print("✅ Query executed successfully")
+                logger.info(f"🔍 Executing query: {query[:60]}{'...' if len(query) > 60 else ''}")
+                result = self.conn.execute(query).fetchdf().to_markdown()
+                logger.info("✅ Query executed successfully")
+                return result
             elif self.result_format == "duckbox":
                 # Duckbox version of the output
                 buffer = io.StringIO()
                 with redirect_stdout(buffer):
-                    self.conn.sql(query).show(max_rows=100, max_col_width=20)
+                    self.conn.sql(query).show()
                 return buffer.getvalue()
             else:
                 # Text version of the output
                 return str(self.conn.execute(query).fetchall())
 
         except Exception as e:
-            logger.error(f"Database error executing query: {e}")
-            print(f"❌ Error executing query: {e}")
-            raise ValueError(f"Error executing query: {e}")
+            raise ValueError(f"❌ Error executing query: {e}")
 
     def mcp_config(self) -> dict[str, str]:
         """Used for debugging purposes to show the current MCP config"""
@@ -228,5 +225,5 @@ async def main(db_path: str, result_format: Literal["markdown", "duckbox", "text
         )
 
         # This will only be reached when the server is shutting down
-        print("\n🦆 MotherDuck MCP Server shutting down...")
-        print(f"Database connection to {db_client.db_path} closed.")
+        logger.info("\n🦆 MotherDuck MCP Server shutting down...")
+        logger.info(f"Database connection to {db_client.db_path} closed.")

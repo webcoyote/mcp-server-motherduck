@@ -16,7 +16,7 @@ An MCP server implementation that integrates MotherDuck and local DuckDB, provid
 
 The server provides one prompt:
 
-- `duckdb-motherduck-prompt`: A prompt to initialize a connection to DuckDB or MotherDuck and start working with it
+- `duckdb-motherduck-initial-prompt`: A prompt to initialize a connection to DuckDB or MotherDuck and start working with it
 
 ### Tools
 
@@ -34,7 +34,9 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 
 - A MotherDuck account (sign up at [motherduck.com](https://motherduck.com))
 - A MotherDuck access token
-- Claude Desktop installed
+- `uvx` installed, you can install it using `pip install uvx` or `brew install uvx`
+
+If you plan to use MotherDuck MCP with Claude Desktop, you will also need Claude Desktop installed.
 
 ### Setting up your MotherDuck token
 
@@ -71,8 +73,6 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 - Replace `YOUR_MOTHERDUCK_TOKEN_HERE` with your actual MotherDuck token
 - Replace `YOUR_HOME_FOLDER_PATH` with the path to your home directory (needed by DuckDB for file operations). For example, on macOS, it would be `/Users/your_username`
 - The `HOME` environment variable is required for DuckDB to function properly.
-- MCP tools are only available to the Agent in Composer
-
 
 ## Example Queries
 
@@ -85,37 +85,11 @@ Once configured, you can ask Claude to run queries like:
 
 ## Testing
 
-The server is designed to be run by tools like Claude Desktop or Cursor, but you can start it manually for testing purposes.
+The server is designed to be run by tools like Claude Desktop, but you can start it manually for testing purposes. To install and run the the package using `uvx`:
 
-There are multiple ways to install and run the server:
-
-### Option 1: Using `uvx`
-
-1. Install the package using `uvx`:
-
-   ```bash
-   uvx run .
-   ```
-
-2. Start the server manually (for testing):
-
-   ```bash
-   uvx mcp-server-motherduck
-   ```
-
-### Option 2: Using `pip`
-
-1. Install the package directly using pip:
-
-   ```bash
-   pip install -e .
-   ```
-
-2. Start the server manually:
-
-   ```bash
-   mcp-server-motherduck
-   ```
+```bash
+uvx .
+```
 
 When testing the server manually, you can specify which database to connect to using the `--db-path` parameter:
 
@@ -130,7 +104,7 @@ When testing the server manually, you can specify which database to connect to u
    - Alternatively, you can pass the token directly:
 
    ```bash
-   uvx mcp-server-motherduck --db-path md: --token <your_motherduck_token>
+   uvx mcp-server-motherduck --db-path md: motherduck_token=<your_motherduck_token>
    ```
 
 2. **Specific MotherDuck database**:
@@ -157,8 +131,8 @@ If you don't specify a database path but have set the `motherduck_token` environ
 
 The server uses the following environment variables:
 
-- `motherduck_token`: Your MotherDuck authentication token (can also be passed via `--token` parameter)
-- `HOME`: Directory used by DuckDB for file operations (if not set, a temporary directory will be created automatically)
+- `motherduck_token`: Your MotherDuck authentication token
+- `HOME`: Directory used by DuckDB for file operations
 
 ## Troubleshooting
 
