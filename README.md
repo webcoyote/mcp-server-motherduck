@@ -122,6 +122,16 @@ The server is designed to be run by tools like Claude Desktop, but you can start
 
 If you don't specify a database path but have set the `motherduck_token` environment variable, the server will automatically connect to the default MotherDuck database (`md:`).
 
+## Running in SSE mode
+
+The server could also be run ing SSE mode using `supergateway` by running the following command:
+
+```bash
+motherduck_token=<your_motherduck_token> HOME=<your_home_folder_path> npx -y supergateway --stdio "uvx mcp-server-motherduck"
+```
+
+And you can point your clients such as Claude Desktop, Cursor to this endpoint.
+
 ### Environment Variables
 
 The server uses the following environment variables:
