@@ -80,7 +80,7 @@ class DatabaseClient:
                 # Duckbox version of the output
                 buffer = io.StringIO()
                 with redirect_stdout(buffer):
-                    self.conn.sql(query).show()
+                    self.conn.sql(query).show(max_rows=100, max_col_width=20)
                 return buffer.getvalue()
             else:
                 # Text version of the output
