@@ -58,12 +58,12 @@ If you plan to use MotherDuck MCP with Claude Desktop, you will also need Claude
   "mcp-server-motherduck": {
     "command": "uvx",
     "args": [
-      "mcp-server-motherduck"
+      "mcp-server-motherduck",
+      "--db-path",
+      "md:",
+      "--motherduck-token",
+      "<YOUR_MOTHERDUCK_TOKEN_HERE>",
     ],
-    "env": {
-      "motherduck_token": "YOUR_MOTHERDUCK_TOKEN_HERE",
-      "HOME": "YOUR_HOME_FOLDER_PATH"
-    }
   }
 }
 ```
@@ -85,27 +85,20 @@ Once configured, you can ask Claude to run queries like:
 
 ## Testing
 
-The server is designed to be run by tools like Claude Desktop, but you can start it manually for testing purposes. When testing the server manually, you can specify which database to connect to using the `--db-path` parameter:
+The server is designed to be run by tools like Claude Desktop and Cursor, but you can start it manually for testing purposes. When testing the server manually, you can specify which database to connect to using the `--db-path` parameter:
 
 1. **Default MotherDuck database**:
 
-   - To connect to the default MotherDuck database, you will need to export the `motherduck_token` environment variable.
+   - To connect to the default MotherDuck database, you will need to pass the auth token using the `--motherduck-token` parameter.
 
    ```bash
-   export motherduck_token=<your_motherduck_token>
-   uvx mcp-server-motherduck --db-path md:
-   ```
-
-   - Alternatively, you can pass the token directly:
-
-   ```bash
-   motherduck_token=<your_motherduck_token> uvx mcp-server-motherduck --db-path md:
+   uvx mcp-server-motherduck --db-path md: --motherduck-token <your_motherduck_token>
    ```
 
 2. **Specific MotherDuck database**:
 
    ```bash
-   uvx mcp-server-motherduck --db-path md:your_database_name
+   uvx mcp-server-motherduck --db-path md:your_database_name --motherduck-token <your_motherduck_token>
    ```
 
 3. **Local DuckDB database**:
@@ -114,10 +107,10 @@ The server is designed to be run by tools like Claude Desktop, but you can start
    uvx mcp-server-motherduck --db-path /path/to/your/local.db
    ```
 
-4. **In-memory database** (default if no path and no token):
+4. **In-memory database**:
 
    ```bash
-   uvx mcp-server-motherduck
+   uvx mcp-server-motherduck --db-path :memory:
    ```
 
 If you don't specify a database path but have set the `motherduck_token` environment variable, the server will automatically connect to the default MotherDuck database (`md:`).
@@ -127,23 +120,17 @@ If you don't specify a database path but have set the `motherduck_token` environ
 The server could also be run ing SSE mode using `supergateway` by running the following command:
 
 ```bash
-motherduck_token=<your_motherduck_token> HOME=<your_home_folder_path> npx -y supergateway --stdio "uvx mcp-server-motherduck"
+npx -y supergateway --stdio "uvx mcp-server-motherduck --db-path md: --motherduck-token <your_motherduck_token>"
 ```
 
 And you can point your clients such as Claude Desktop, Cursor to this endpoint.
 
-### Environment Variables
-
-The server uses the following environment variables:
-
-- `motherduck_token`: Your MotherDuck authentication token
-- `HOME`: Directory used by DuckDB for file operations
-
 ## Troubleshooting
 
 - If you encounter connection issues, verify your MotherDuck token is correct
-- For local file access problems, ensure the `HOME` environment variable is set correctly
+- For local file access problems, ensure the `--home-dir` parameter is set correctly
 - Check that the `uvx` command is available in your PATH
+- In version previous for v0.4.0 we used environment variables, now we use parameters
 
 ## License
 

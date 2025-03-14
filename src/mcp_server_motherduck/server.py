@@ -12,7 +12,7 @@ from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
 
-SERVER_VERSION = "0.3.4"
+SERVER_VERSION = "0.4.0-rc.1"
 
 logger = logging.getLogger("mcp_server_motherduck")
 
@@ -21,10 +21,18 @@ class DatabaseClient:
     def __init__(
         self,
         db_path: str | None = None,
+        motherduck_token: str | None = None,
         result_format: Literal["markdown", "duckbox", "text"] = "markdown",
+        home_dir: str | None = None,
     ):
-        self.db_path, self.db_type = self._resolve_db_path_type(db_path)
+        self.db_path, self.db_type = self._resolve_db_path_type(
+            db_path, motherduck_token
+        )
         logger.info(f"Database client initialized in `{self.db_type}` mode")
+
+        # Set the home directory for DuckDB
+        if home_dir:
+            os.environ["HOME"] = home_dir
 
         self.conn = self._initialize_connection()
         self.result_format = result_format
@@ -32,7 +40,7 @@ class DatabaseClient:
     def _initialize_connection(self) -> duckdb.DuckDBPyConnection:
         """Initialize connection to the MotherDuck or DuckDB database"""
 
-        logger.info(f"🔌 Connecting to {self.db_type} database: {self.db_path}")
+        logger.info(f"🔌 Connecting to {self.db_type} database")
 
         conn = duckdb.connect(
             self.db_path,
@@ -44,32 +52,36 @@ class DatabaseClient:
         return conn
 
     def _resolve_db_path_type(
-        self, db_path: str | None = None
+        self, db_path: str, motherduck_token: str | None = None
     ) -> tuple[str, Literal["duckdb", "motherduck"]]:
         """Resolve and validate the database path"""
-        # Use MotherDuck if token is available and no path specified
-        if db_path is None and os.getenv("motherduck_token"):
-            logger.info("Using MotherDuck token to connect to database `md:`")
-            return "md:", "motherduck"
-
         # Handle MotherDuck paths
-        if db_path and (db_path == "md:" or db_path.startswith("md:")):
-            if not os.getenv("motherduck_token"):
+        if db_path.startswith("md:"):
+            if motherduck_token:
+                logger.info("Using MotherDuck token to connect to database `md:`")
+                return f"{db_path}?motherduck_token={motherduck_token}", "motherduck"
+            elif os.getenv("motherduck_token"):
+                logger.info(
+                    "Using MotherDuck token from env to connect to database `md:`"
+                )
+                return (
+                    f"{db_path}?motherduck_token={os.getenv('motherduck_token')}",
+                    "motherduck",
+                )
+            else:
                 raise ValueError(
-                    "Please set the `motherduck_token` environment variable when using `md:` as db_path."
+                    "Please set the `motherduck_token` as an environment variable or pass it as an argument with `--motherduck-token` when using `md:` as db_path."
                 )
-            return db_path, "motherduck"
 
-        # Handle local database paths
-        if db_path:
-            if not os.path.exists(db_path):
-                raise FileNotFoundError(
-                    f"The database path `{db_path}` does not exist."
-                )
+        if db_path == ":memory:":
             return db_path, "duckdb"
 
-        # Default to in-memory database
-        return ":memory:", "duckdb"
+        # Handle local database paths as the last check
+        if not os.path.exists(db_path):
+            raise FileNotFoundError(
+                f"The local database path `{db_path}` does not exist."
+            )
+        return db_path, "duckdb"
 
     def query(self, query: str) -> str:
         try:
@@ -94,21 +106,21 @@ class DatabaseClient:
         except Exception as e:
             raise ValueError(f"❌ Error executing query: {e}")
 
-    def mcp_config(self) -> dict[str, str]:
-        """Used for debugging purposes to show the current MCP config"""
-        return {
-            "current_working_directory": os.getcwd(),
-            "database_type": self.db_type,
-            "database_path": self.db_path,
-        }
-
 
 async def main(
-    db_path: str, result_format: Literal["markdown", "duckbox", "text"] = "markdown"
+    db_path: str,
+    motherduck_token: str | None = None,
+    result_format: Literal["markdown", "duckbox", "text"] = "markdown",
+    home_dir: str | None = None,
 ):
-    logger.info(f"Starting MotherDuck MCP Server with DB path: {db_path}")
+    logger.info("Starting MotherDuck MCP Server")
     server = Server("mcp-server-motherduck")
-    db_client = DatabaseClient(db_path=db_path, result_format=result_format)
+    db_client = DatabaseClient(
+        db_path=db_path,
+        result_format=result_format,
+        motherduck_token=motherduck_token,
+        home_dir=home_dir,
+    )
 
     logger.info("Registering handlers")
 
@@ -235,4 +247,3 @@ async def main(
 
         # This will only be reached when the server is shutting down
         logger.info("\n🦆 MotherDuck MCP Server shutting down...")
-        logger.info(f"Database connection to {db_client.db_path} closed.")
