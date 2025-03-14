@@ -13,22 +13,23 @@ def main():
     parser = argparse.ArgumentParser(description="MotherDuck MCP Server")
     parser.add_argument(
         "--db-path",
-        help="Path to local DuckDB database file",
+        default="md:",
+        help="(Default: `md:`) Path to local DuckDB database file or MotherDuck database",
     )
     parser.add_argument(
         "--motherduck-token",
         default=None,
-        help="Access token to use for MotherDuck database connections",
+        help="(Default: env var `motherduck_token`) Access token to use for MotherDuck database connections",
     )
     parser.add_argument(
         "--home-dir",
         default=None,
-        help="Home directory for DuckDB",
+        help="(Default: env var `HOME`) Home directory for DuckDB",
     )
     # This is experimental and will change in the future
     parser.add_argument(
         "--result-format",
-        help="Format of the output",
+        help="(Default: `markdown`) Format of the query result",
         default="markdown",
         choices=["markdown", "duckbox", "text"],
     )

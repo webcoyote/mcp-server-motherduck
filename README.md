@@ -107,13 +107,13 @@ The server is designed to be run by tools like Claude Desktop and Cursor, but yo
    uvx mcp-server-motherduck --db-path /path/to/your/local.db
    ```
 
-4. **In-memory database** (default if no path and no token):
+4. **In-memory database**:
 
    ```bash
-   uvx mcp-server-motherduck
+   uvx mcp-server-motherduck --db-path :memory:
    ```
 
-If you don't specify a database path but have set the `--motherduck-token` environment variable, the server will automatically connect to the default MotherDuck database (`md:`).
+If you don't specify a database path but have set the `motherduck_token` environment variable, the server will automatically connect to the default MotherDuck database (`md:`).
 
 ## Running in SSE mode
 

@@ -52,38 +52,36 @@ class DatabaseClient:
         return conn
 
     def _resolve_db_path_type(
-        self, db_path: str | None = None, motherduck_token: str | None = None
+        self, db_path: str, motherduck_token: str | None = None
     ) -> tuple[str, Literal["duckdb", "motherduck"]]:
         """Resolve and validate the database path"""
         # Handle MotherDuck paths
-        if db_path and (db_path == "md:" or db_path.startswith("md:")):
+        if db_path.startswith("md:"):
             if motherduck_token:
                 logger.info("Using MotherDuck token to connect to database `md:`")
                 return f"{db_path}?motherduck_token={motherduck_token}", "motherduck"
-            # disabling setting motherduck_token through env as it doesn't work for all configurations
-            # elif os.getenv("motherduck_token"):
-            #     logger.info("Using MotherDuck token to connect to database `md:`")
-            #     return f"{db_path}?motherduck_token={motherduck_token}", "motherduck"
+            elif os.getenv("motherduck_token"):
+                logger.info(
+                    "Using MotherDuck token from env to connect to database `md:`"
+                )
+                return (
+                    f"{db_path}?motherduck_token={os.getenv('motherduck_token')}",
+                    "motherduck",
+                )
             else:
                 raise ValueError(
                     "Please set the `motherduck_token` as an environment variable or pass it as an argument with `--motherduck-token` when using `md:` as db_path."
                 )
 
-        # Use MotherDuck if token is available and no path specified
-        if db_path is None and motherduck_token:
-            logger.info("Using MotherDuck token to connect to database `md:`")
-            return f"md:?motherduck_token={motherduck_token}", "motherduck"
-
-        # Handle local database paths
-        if db_path:
-            if not os.path.exists(db_path):
-                raise FileNotFoundError(
-                    f"The local database path `{db_path}` does not exist."
-                )
+        if db_path == ":memory:":
             return db_path, "duckdb"
 
-        # Default to in-memory database
-        return ":memory:", "duckdb"
+        # Handle local database paths as the last check
+        if not os.path.exists(db_path):
+            raise FileNotFoundError(
+                f"The local database path `{db_path}` does not exist."
+            )
+        return db_path, "duckdb"
 
     def query(self, query: str) -> str:
         try:
