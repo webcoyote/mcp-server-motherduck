@@ -85,7 +85,7 @@ Once configured, you can ask Claude to run queries like:
 
 ## Testing
 
-The server is designed to be run by tools like Claude Desktop, but you can start it manually for testing purposes. When testing the server manually, you can specify which database to connect to using the `--db-path` parameter:
+The server is designed to be run by tools like Claude Desktop and Cursor, but you can start it manually for testing purposes. When testing the server manually, you can specify which database to connect to using the `--db-path` parameter:
 
 1. **Default MotherDuck database**:
 
