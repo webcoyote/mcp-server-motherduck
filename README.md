@@ -34,7 +34,7 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 
 - A MotherDuck account (sign up at [motherduck.com](https://motherduck.com))
 - A MotherDuck access token
-- `uvx` installed, you can install it using `pip install uvx` or `brew install uvx`
+- `uv` installed, you can install it using `pip install uv` or `brew install uv`
 
 If you plan to use MotherDuck MCP with Claude Desktop, you will also need Claude Desktop installed.
 
