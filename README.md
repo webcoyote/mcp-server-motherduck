@@ -130,6 +130,7 @@ And you can point your clients such as Claude Desktop, Cursor to this endpoint.
 - If you encounter connection issues, verify your MotherDuck token is correct
 - For local file access problems, ensure the `--home-dir` parameter is set correctly
 - Check that the `uvx` command is available in your PATH
+- If you encounter [`spawn uvx ENOENT`](https://github.com/motherduckdb/mcp-server-motherduck/issues/6) errors, try specifying the full path to `uvx` (output of `which uvx`)
 - In version previous for v0.4.0 we used environment variables, now we use parameters
 
 ## License
