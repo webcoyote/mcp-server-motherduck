@@ -54,16 +54,18 @@ If you plan to use MotherDuck MCP with Claude Desktop, you will also need Claude
 - Add the following configuration to your `claude_desktop_config.json`:
 
 ```json
-"mcpServers": {
-  "mcp-server-motherduck": {
-    "command": "uvx",
-    "args": [
-      "mcp-server-motherduck",
-      "--db-path",
-      "md:",
-      "--motherduck-token",
-      "<YOUR_MOTHERDUCK_TOKEN_HERE>",
-    ],
+{
+  "mcpServers": {
+    "mcp-server-motherduck": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-motherduck",
+        "--db-path",
+        "md:",
+        "--motherduck-token",
+        "<YOUR_MOTHERDUCK_TOKEN_HERE>"
+      ],
+    }
   }
 }
 ```
