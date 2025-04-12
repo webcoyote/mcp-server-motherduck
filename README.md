@@ -35,6 +35,8 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 - No prerequisites. The MCP server will create an in-memory database on-the-fly 
 - Or connect to an existing local DuckDB database file
 
+See [Connect To Local DuckDB](#connect-to-local-duckdb).
+
 ### Prerequisites for MotherDuck
 
 - A MotherDuck account (sign up at [motherduck.com](https://motherduck.com))
@@ -200,7 +202,9 @@ Refer to the [Read Scaling documentation](https://motherduck.com/docs/key-tasks/
 
 ## Connect to local DuckDB
 
-To connect to a local DuckDB, instead of using the MotherDuck token, you can specify the path to your local DuckDB database file or just use `:memory:` for an in-memory database.
+To connect to a local DuckDB, instead of using the MotherDuck token, specify the path to your local DuckDB database file or use `:memory:` for an in-memory database.
+
+In-memory database:
 ```json
 {
   "mcpServers": {
@@ -210,6 +214,22 @@ To connect to a local DuckDB, instead of using the MotherDuck token, you can spe
         "mcp-server-motherduck",
         "--db-path",
         ":memory:"
+      ]
+    }
+  }
+}
+```
+
+Local DuckDB file:
+```json
+{
+  "mcpServers": {
+    "mcp-server-motherduck": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-motherduck",
+        "--db-path",
+        "/path/to/your/local.db"
       ]
     }
   }
