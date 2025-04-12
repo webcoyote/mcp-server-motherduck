@@ -30,6 +30,11 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 
 ## Getting Started
 
+### General Prerequisites
+- `uv` installed, you can install it using `pip install uv` or `brew install uv`
+
+If you plan to use the MCP with Claude Desktop or any other MCP comptabile client, the client need to be installed. 
+
 ### Prerequisites for DuckDB
 
 - No prerequisites. The MCP server can create an in-memory database on-the-fly 
@@ -41,9 +46,6 @@ See [Connect To Local DuckDB](#connect-to-local-duckdb).
 
 - A MotherDuck account (sign up at [motherduck.com](https://motherduck.com))
 - A MotherDuck access token
-- `uv` installed, you can install it using `pip install uv` or `brew install uv`
-
-If you plan to use MotherDuck MCP with Claude Desktop, you will also need Claude Desktop installed.
 
 ### Setting up your MotherDuck token
 
