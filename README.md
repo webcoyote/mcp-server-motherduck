@@ -44,6 +44,32 @@ If you plan to use MotherDuck MCP with Claude Desktop, you will also need Claude
 2. Generate an access token via the [MotherDuck UI](https://app.motherduck.com/settings/tokens?auth_flow=signup)
 3. Store the token securely for use in the configuration
 
+### Usage with Cursor
+
+1. Install Cursor from [cursor.com/downloads](https://www.cursor.com/downloads) if you haven't already
+
+2. Open the Cursor:
+
+- To set it up globally for the first time, go to Settings->MCP and click on "+ Add new global MCP server". 
+- This will open a `mcp.json` file to which you add the following configuration:
+
+```json
+{
+  "mcpServers": {
+    "mcp-server-motherduck": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-motherduck",
+        "--db-path",
+        "md:",
+        "--motherduck-token",
+        "<YOUR_MOTHERDUCK_TOKEN_HERE>"
+      ],
+    }
+  }
+}
+```
+
 ### Usage with VS Code
 
 [![Install with UV in VS Code](https://img.shields.io/badge/VS_Code-UV-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=mcp-server-motherduck&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22mcp-server-motherduck%22%2C%22--db-path%22%2C%22md%3A%22%2C%22--motherduck-token%22%2C%22%24%7Binput%3Amotherduck_token%7D%22%5D%7D&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22motherduck_token%22%2C%22description%22%3A%22MotherDuck+Token%22%2C%22password%22%3Atrue%7D%5D) [![Install with UV in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-UV-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=mcp-server-motherduck&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22mcp-server-motherduck%22%2C%22--db-path%22%2C%22md%3A%22%2C%22--motherduck-token%22%2C%22%24%7Binput%3Amotherduck_token%7D%22%5D%7D&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22motherduck_token%22%2C%22description%22%3A%22MotherDuck+Token%22%2C%22password%22%3Atrue%7D%5D&quality=insiders)
@@ -138,6 +164,36 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
 - Replace `YOUR_MOTHERDUCK_TOKEN_HERE` with your actual MotherDuck token
 - Replace `YOUR_HOME_FOLDER_PATH` with the path to your home directory (needed by DuckDB for file operations). For example, on macOS, it would be `/Users/your_username`
 - The `HOME` environment variable is required for DuckDB to function properly.
+
+## Securing your MCP server
+
+If you expose the MCP server to third parties that should only have read access to your data, we recommend using a read-scaling token and running the MCP server in saas mode.
+
+**Read Scaling Tokens**
+Read scaling tokens are special access tokens that enable scalable read operations by allowing up to 4 concurrent read replicas, improving performance for multiple end users while restricting write capabilities. 
+Refer to the [Read Scaling documentation](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/read-scaling/#creating-a-read-scaling-token) to learn how to create a read-scaling token.
+
+**SaaS Mode**
+SaaS mode in MotherDuck enhances security by restricting its access to local files, databases, extensions, and configurations, making it ideal for third-party tools that require stricter environment protection. [learn more](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/authenticating-to-motherduck/#authentication-using-saas-mode).
+
+**Secure Configuration**
+```json
+{
+  "mcpServers": {
+    "mcp-server-motherduck": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-motherduck",
+        "--db-path",
+        "md:",
+        "--motherduck-token",
+        "<YOUR_READ_SCALING_TOKEN_HERE>",
+        "--saas-mode"
+      ],
+    }
+  }
+}
+```
 
 ## Example Queries
 
