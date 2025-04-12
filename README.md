@@ -1,4 +1,4 @@
-# DuckDB and MotherDuck MCP Server
+# MotherDuck's DuckDB MCP Server
 
 An MCP server implementation that interacts with DuckDB and MotherDuck databases, providing SQL analytics capabilities to AI Assistants and IDEs.
 
