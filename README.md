@@ -279,7 +279,7 @@ If you don't specify a database path but have set the `motherduck_token` environ
 
 ## Running in SSE mode
 
-The server could also be run ing SSE mode using `supergateway` by running the following command:
+The server could also be running SSE mode using `supergateway` by running the following command:
 
 ```bash
 npx -y supergateway --stdio "uvx mcp-server-motherduck --db-path md: --motherduck-token <your_motherduck_token>"
@@ -289,7 +289,7 @@ And you can point your clients such as Claude Desktop, Cursor to this endpoint.
 
 ## Development configuration
 
-If you are developing the server, you can run it in a local environment with the following configuration:
+To run the server from a local development environment, use the following configuration:
 
 ```json
  {
