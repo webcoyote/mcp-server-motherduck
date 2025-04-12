@@ -287,6 +287,30 @@ npx -y supergateway --stdio "uvx mcp-server-motherduck --db-path md: --motherduc
 
 And you can point your clients such as Claude Desktop, Cursor to this endpoint.
 
+## Development configuration
+
+If you are developing the server, you can run it in a local environment with the following configuration:
+
+```json
+ {
+  "mcpServers": {
+    "mcp-server-motherduck": {
+      "command": "uv",
+      "args": [
+        "--directory", 
+        "/path/to/your/local/mcp-server-motherduck", 
+        "run", 
+        "mcp-server-motherduck", 
+        "--db-path",
+        "md:",
+        "--motherduck-token",
+        "<YOUR_MOTHERDUCK_TOKEN_HERE>"
+      ]
+    }
+  }
+}
+```
+
 ## Troubleshooting
 
 - If you encounter connection issues, verify your MotherDuck token is correct
