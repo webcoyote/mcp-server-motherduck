@@ -238,7 +238,7 @@ Local DuckDB file:
 
 ## Example Queries
 
-Once configured, you can ask Claude to run queries like:
+Once configured, you can e.g. ask Claude to run queries like:
 
 - "Create a new database and table in MotherDuck"
 - "Query data from my local CSV file"
