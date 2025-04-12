@@ -174,12 +174,10 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
 
 If you expose the MCP server to third parties that should only have read access to your data, we recommend using a read-scaling token and running the MCP server in saas mode.
 
-**Read Scaling Tokens**
-Read scaling tokens are special access tokens that enable scalable read operations by allowing up to 4 concurrent read replicas, improving performance for multiple end users while restricting write capabilities. 
+**Read Scaling Tokens** are special access tokens that enable scalable read operations by allowing up to 4 concurrent read replicas, improving performance for multiple end users while restricting write capabilities. 
 Refer to the [Read Scaling documentation](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/read-scaling/#creating-a-read-scaling-token) to learn how to create a read-scaling token.
 
-**SaaS Mode**
-SaaS mode in MotherDuck enhances security by restricting its access to local files, databases, extensions, and configurations, making it ideal for third-party tools that require stricter environment protection. [learn more](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/authenticating-to-motherduck/#authentication-using-saas-mode).
+**SaaS Mode** in MotherDuck enhances security by restricting its access to local files, databases, extensions, and configurations, making it ideal for third-party tools that require stricter environment protection. [learn more](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/authenticating-to-motherduck/#authentication-using-saas-mode).
 
 **Secure Configuration**
 ```json
