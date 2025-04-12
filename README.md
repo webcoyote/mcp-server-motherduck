@@ -40,7 +40,7 @@ If you plan to use the MCP with Claude Desktop or any other MCP comptabile clien
 - No prerequisites. The MCP server can create an in-memory database on-the-fly 
 - Or connect to an existing local DuckDB database file
 
-See [Connect To Local DuckDB](#connect-to-local-duckdb).
+See [Connect to local DuckDB](#connect-to-local-duckdb).
 
 ### Prerequisites for MotherDuck
 
