@@ -32,7 +32,7 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 
 ### Prerequisites for DuckDB
 
-- No prerequisites. The MCP server will create an in-memory database on-the-fly 
+- No prerequisites. The MCP server can create an in-memory database on-the-fly 
 - Or connect to an existing local DuckDB database file
 
 See [Connect To Local DuckDB](#connect-to-local-duckdb).
