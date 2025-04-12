@@ -48,7 +48,7 @@ If you plan to use MotherDuck MCP with Claude Desktop, you will also need Claude
 
 1. Install Cursor from [cursor.com/downloads](https://www.cursor.com/downloads) if you haven't already
 
-2. Open the Cursor:
+2. Open Cursor:
 
 - To set it up globally for the first time, go to Settings->MCP and click on "+ Add new global MCP server". 
 - This will open a `mcp.json` file to which you add the following configuration:
