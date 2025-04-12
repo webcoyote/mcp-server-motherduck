@@ -1,13 +1,13 @@
-# MotherDuck MCP Server
+# DuckDB and MotherDuck MCP Server
 
-An MCP server implementation that integrates MotherDuck and local DuckDB, providing SQL analytics capabilities to Claude.
+An MCP server implementation that interacts with DuckDB and MotherDuck databases, providing SQL analytics capabilities to AI Assistants and IDEs.
 
 ## Features
 
-- **Hybrid execution**: query data from both cloud-based MotherDuck and local DuckDB
+- **Hybrid execution**: query data from local DuckDB or cloud-based MotherDuck databases
 - **Cloud storage integration**: access data stored in Amazon S3 or other cloud storage thanks to MotherDuck's integrations
 - **Data sharing**: create and share databases
-- **SQL analytics**: use DuckDB's SQL dialect to query any size of data directly from Claude
+- **SQL analytics**: use DuckDB's SQL dialect to query any size of data directly from your AI Assistant or IDE
 - **Serverless architecture**: run analytics without needing to configure instances or clusters
 
 ## Components
@@ -22,7 +22,7 @@ The server provides one prompt:
 
 The server offers one tool:
 
-- `query`: Execute a SQL query on the MotherDuck/DuckDB database
+- `query`: Execute a SQL query on the DuckDB/MotherDuck database
   - **Inputs**:
     - `query` (string, required): The SQL query to execute
 
@@ -30,7 +30,12 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 
 ## Getting Started
 
-### Prerequisites
+### Prerequisites for DuckDB
+
+- No prerequisites. The MCP server will create an in-memory database on-the-fly 
+- Or connect to an existing local DuckDB database file
+
+### Prerequisites for MotherDuck
 
 - A MotherDuck account (sign up at [motherduck.com](https://motherduck.com))
 - A MotherDuck access token
@@ -64,7 +69,7 @@ If you plan to use MotherDuck MCP with Claude Desktop, you will also need Claude
         "md:",
         "--motherduck-token",
         "<YOUR_MOTHERDUCK_TOKEN_HERE>"
-      ],
+      ]
     }
   }
 }
@@ -153,7 +158,7 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
         "md:",
         "--motherduck-token",
         "<YOUR_MOTHERDUCK_TOKEN_HERE>"
-      ],
+      ]
     }
   }
 }
@@ -189,7 +194,25 @@ SaaS mode in MotherDuck enhances security by restricting its access to local fil
         "--motherduck-token",
         "<YOUR_READ_SCALING_TOKEN_HERE>",
         "--saas-mode"
-      ],
+      ]
+    }
+  }
+}
+```
+
+## Connect to local DuckDB
+
+To connect to a local DuckDB, instead of using the MotherDuck token, you can specify the path to your local DuckDB database file or just use `:memory:` for an in-memory database.
+```json
+{
+  "mcpServers": {
+    "mcp-server-motherduck": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-motherduck",
+        "--db-path",
+        ":memory:"
+      ]
     }
   }
 }
