@@ -170,7 +170,7 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
 - Replace `YOUR_HOME_FOLDER_PATH` with the path to your home directory (needed by DuckDB for file operations). For example, on macOS, it would be `/Users/your_username`
 - The `HOME` environment variable is required for DuckDB to function properly.
 
-## Securing your MCP server
+## Securing the MCP Server
 
 If you expose the MCP server to third parties that should only have read access to your data, we recommend using a read-scaling token and running the MCP server in saas mode.
 
