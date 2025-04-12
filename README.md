@@ -22,7 +22,7 @@ The server provides one prompt:
 
 The server offers one tool:
 
-- `query`: Execute a SQL query on the DuckDB/MotherDuck database
+- `query`: Execute a SQL query on the DuckDB or MotherDuck database
   - **Inputs**:
     - `query` (string, required): The SQL query to execute
 
