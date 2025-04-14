@@ -44,11 +44,6 @@ See [Connect to local DuckDB](#connect-to-local-duckdb).
 
 ### Prerequisites for MotherDuck
 
-- A MotherDuck account (sign up at [motherduck.com](https://motherduck.com))
-- A MotherDuck access token
-
-### Setting up your MotherDuck token
-
 1. Sign up for a [MotherDuck account](https://app.motherduck.com/?auth_flow=signup)
 2. Generate an access token via the [MotherDuck UI](https://app.motherduck.com/settings/tokens?auth_flow=signup)
 3. Store the token securely for use in the configuration
