@@ -1,13 +1,13 @@
-# MotherDuck MCP Server
+# MotherDuck's DuckDB MCP Server
 
-An MCP server implementation that integrates MotherDuck and local DuckDB, providing SQL analytics capabilities to Claude.
+An MCP server implementation that interacts with DuckDB and MotherDuck databases, providing SQL analytics capabilities to AI Assistants and IDEs.
 
 ## Features
 
-- **Hybrid execution**: query data from both cloud-based MotherDuck and local DuckDB
+- **Hybrid execution**: query data from local DuckDB or/and cloud-based MotherDuck databases
 - **Cloud storage integration**: access data stored in Amazon S3 or other cloud storage thanks to MotherDuck's integrations
 - **Data sharing**: create and share databases
-- **SQL analytics**: use DuckDB's SQL dialect to query any size of data directly from Claude
+- **SQL analytics**: use DuckDB's SQL dialect to query any size of data directly from your AI Assistant or IDE
 - **Serverless architecture**: run analytics without needing to configure instances or clusters
 
 ## Components
@@ -22,7 +22,7 @@ The server provides one prompt:
 
 The server offers one tool:
 
-- `query`: Execute a SQL query on the MotherDuck/DuckDB database
+- `query`: Execute a SQL query on the DuckDB or MotherDuck database
   - **Inputs**:
     - `query` (string, required): The SQL query to execute
 
@@ -30,19 +30,49 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 
 ## Getting Started
 
-### Prerequisites
-
-- A MotherDuck account (sign up at [motherduck.com](https://motherduck.com))
-- A MotherDuck access token
+### General Prerequisites
 - `uv` installed, you can install it using `pip install uv` or `brew install uv`
 
-If you plan to use MotherDuck MCP with Claude Desktop, you will also need Claude Desktop installed.
+If you plan to use the MCP with Claude Desktop or any other MCP comptabile client, the client need to be installed. 
 
-### Setting up your MotherDuck token
+### Prerequisites for DuckDB
 
-1. Sign up for a [MotherDuck account](https://app.motherduck.com/?auth_flow=signup)
-2. Generate an access token via the [MotherDuck UI](https://app.motherduck.com/settings/tokens?auth_flow=signup)
-3. Store the token securely for use in the configuration
+- No prerequisites. The MCP server can create an in-memory database on-the-fly 
+- Or connect to an existing local DuckDB database file , or one stored on remote object storage (e.g., AWS S3).
+
+See [Connect to local DuckDB](#connect-to-local-duckdb).
+
+### Prerequisites for MotherDuck
+
+- Sign up for a [MotherDuck account](https://app.motherduck.com/?auth_flow=signup)
+- Generate an access token via the [MotherDuck UI](https://app.motherduck.com/settings/tokens?auth_flow=signup)
+- Store the token securely for use in the configuration
+
+### Usage with Cursor
+
+1. Install Cursor from [cursor.com/downloads](https://www.cursor.com/downloads) if you haven't already
+
+2. Open Cursor:
+
+- To set it up globally for the first time, go to Settings->MCP and click on "+ Add new global MCP server". 
+- This will open a `mcp.json` file to which you add the following configuration:
+
+```json
+{
+  "mcpServers": {
+    "mcp-server-motherduck": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-motherduck",
+        "--db-path",
+        "md:",
+        "--motherduck-token",
+        "<YOUR_MOTHERDUCK_TOKEN_HERE>"
+      ]
+    }
+  }
+}
+```
 
 ### Usage with VS Code
 
@@ -127,7 +157,7 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
         "md:",
         "--motherduck-token",
         "<YOUR_MOTHERDUCK_TOKEN_HERE>"
-      ],
+      ]
     }
   }
 }
@@ -139,9 +169,73 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
 - Replace `YOUR_HOME_FOLDER_PATH` with the path to your home directory (needed by DuckDB for file operations). For example, on macOS, it would be `/Users/your_username`
 - The `HOME` environment variable is required for DuckDB to function properly.
 
+## Securing your MCP Server when querying MotherDuck
+
+If the MCP server is exposed to third parties and should only have read access to data, we recommend using a read scaling token and running the MCP server in SaaS mode.
+
+**Read Scaling Tokens** are special access tokens that enable scalable read operations by allowing up to 4 concurrent read replicas, improving performance for multiple end users while *restricting write capabilities*. 
+Refer to the [Read Scaling documentation](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/read-scaling/#creating-a-read-scaling-token) to learn how to create a read-scaling token.
+
+**SaaS Mode** in MotherDuck enhances security by restricting it's access to local files, databases, extensions, and configurations, making it ideal for third-party tools that require stricter environment protection. Learn more about it in the [SaaS Mode documentation](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/authenticating-to-motherduck/#authentication-using-saas-mode).
+
+**Secure Configuration**
+```json
+{
+  "mcpServers": {
+    "mcp-server-motherduck": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-motherduck",
+        "--db-path",
+        "md:",
+        "--motherduck-token",
+        "<YOUR_READ_SCALING_TOKEN_HERE>",
+        "--saas-mode"
+      ]
+    }
+  }
+}
+```
+
+## Connect to local DuckDB
+
+To connect to a local DuckDB, instead of using the MotherDuck token, specify the path to your local DuckDB database file or use `:memory:` for an in-memory database.
+
+In-memory database:
+```json
+{
+  "mcpServers": {
+    "mcp-server-motherduck": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-motherduck",
+        "--db-path",
+        ":memory:"
+      ]
+    }
+  }
+}
+```
+
+Local DuckDB file:
+```json
+{
+  "mcpServers": {
+    "mcp-server-motherduck": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-motherduck",
+        "--db-path",
+        "/path/to/your/local.db"
+      ]
+    }
+  }
+}
+```
+
 ## Example Queries
 
-Once configured, you can ask Claude to run queries like:
+Once configured, you can e.g. ask Claude to run queries like:
 
 - "Create a new database and table in MotherDuck"
 - "Query data from my local CSV file"
@@ -182,13 +276,37 @@ If you don't specify a database path but have set the `motherduck_token` environ
 
 ## Running in SSE mode
 
-The server could also be run ing SSE mode using `supergateway` by running the following command:
+The server could also be running SSE mode using `supergateway` by running the following command:
 
 ```bash
 npx -y supergateway --stdio "uvx mcp-server-motherduck --db-path md: --motherduck-token <your_motherduck_token>"
 ```
 
 And you can point your clients such as Claude Desktop, Cursor to this endpoint.
+
+## Development configuration
+
+To run the server from a local development environment, use the following configuration:
+
+```json
+ {
+  "mcpServers": {
+    "mcp-server-motherduck": {
+      "command": "uv",
+      "args": [
+        "--directory", 
+        "/path/to/your/local/mcp-server-motherduck", 
+        "run", 
+        "mcp-server-motherduck", 
+        "--db-path",
+        "md:",
+        "--motherduck-token",
+        "<YOUR_MOTHERDUCK_TOKEN_HERE>"
+      ]
+    }
+  }
+}
+```
 
 ## Troubleshooting
 

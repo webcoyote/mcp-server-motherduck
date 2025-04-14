@@ -26,6 +26,11 @@ def main():
         default=None,
         help="(Default: env var `HOME`) Home directory for DuckDB",
     )
+    parser.add_argument(
+        "--saas-mode",
+        action="store_true",
+        help="Flag for connecting to MotherDuck in SaaS mode",
+    )
     # This is experimental and will change in the future
     parser.add_argument(
         "--result-format",
@@ -45,6 +50,7 @@ def main():
             motherduck_token=args.motherduck_token,
             result_format=args.result_format,
             home_dir=args.home_dir,
+            saas_mode=args.saas_mode,
         )
     )
 
