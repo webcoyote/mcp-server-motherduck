@@ -29,7 +29,7 @@ def main():
     parser.add_argument(
         "--saas-mode",
         action="store_true",
-        help="Connects to MotherDuck in SaaS mode",
+        help="Flag for connecting to MotherDuck in SaaS mode",
     )
     # This is experimental and will change in the future
     parser.add_argument(
