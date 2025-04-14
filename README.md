@@ -38,7 +38,7 @@ If you plan to use the MCP with Claude Desktop or any other MCP comptabile clien
 ### Prerequisites for DuckDB
 
 - No prerequisites. The MCP server can create an in-memory database on-the-fly 
-- Or connect to an existing local DuckDB database file
+- Or connect to an existing local DuckDB database file , or one stored on remote object storage (e.g., AWS S3).
 
 See [Connect to local DuckDB](#connect-to-local-duckdb).
 
