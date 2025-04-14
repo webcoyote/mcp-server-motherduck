@@ -4,7 +4,7 @@ An MCP server implementation that interacts with DuckDB and MotherDuck databases
 
 ## Features
 
-- **Hybrid execution**: query data from local DuckDB or cloud-based MotherDuck databases
+- **Hybrid execution**: query data from local DuckDB or/and cloud-based MotherDuck databases
 - **Cloud storage integration**: access data stored in Amazon S3 or other cloud storage thanks to MotherDuck's integrations
 - **Data sharing**: create and share databases
 - **SQL analytics**: use DuckDB's SQL dialect to query any size of data directly from your AI Assistant or IDE
