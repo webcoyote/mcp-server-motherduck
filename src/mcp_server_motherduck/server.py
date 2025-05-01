@@ -25,7 +25,9 @@ class DatabaseClient:
         result_format: Literal["markdown", "duckbox", "text"] = "markdown",
         home_dir: str | None = None,
         saas_mode: bool = False,
+        read_only: bool = False,
     ):
+        self._read_only = read_only
         self.db_path, self.db_type = self._resolve_db_path_type(
             db_path, motherduck_token, saas_mode
         )
@@ -43,9 +45,14 @@ class DatabaseClient:
 
         logger.info(f"🔌 Connecting to {self.db_type} database")
 
+        kw = {}
+        if self.db_type == "duckdb":
+            kw["read_only"] = self._read_only
+
         conn = duckdb.connect(
             self.db_path,
             config={"custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"},
+            **kw,
         )
 
         logger.info(f"✅ Successfully connected to {self.db_type} database")
@@ -62,9 +69,15 @@ class DatabaseClient:
                 logger.info("Using MotherDuck token to connect to database `md:`")
                 if saas_mode:
                     logger.info("Connecting to MotherDuck in SaaS mode")
-                    return f"{db_path}?motherduck_token={motherduck_token}&saas_mode=true", "motherduck"
+                    return (
+                        f"{db_path}?motherduck_token={motherduck_token}&saas_mode=true",
+                        "motherduck",
+                    )
                 else:
-                    return f"{db_path}?motherduck_token={motherduck_token}", "motherduck"
+                    return (
+                        f"{db_path}?motherduck_token={motherduck_token}",
+                        "motherduck",
+                    )
             elif os.getenv("motherduck_token"):
                 logger.info(
                     "Using MotherDuck token from env to connect to database `md:`"
@@ -118,6 +131,7 @@ async def main(
     result_format: Literal["markdown", "duckbox", "text"] = "markdown",
     home_dir: str | None = None,
     saas_mode: bool = False,
+    read_only: bool = False,
 ):
     logger.info("Starting MotherDuck MCP Server")
     server = Server("mcp-server-motherduck")
@@ -127,6 +141,7 @@ async def main(
         motherduck_token=motherduck_token,
         home_dir=home_dir,
         saas_mode=saas_mode,
+        read_only=read_only,
     )
 
     logger.info("Registering handlers")
