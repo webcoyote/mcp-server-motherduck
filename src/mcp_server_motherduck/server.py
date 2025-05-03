@@ -2,7 +2,7 @@ import os
 import logging
 import duckdb
 from pydantic import AnyUrl
-from typing import Literal
+from typing import Literal, Optional
 import io
 from contextlib import redirect_stdout
 import mcp.server.stdio
@@ -40,19 +40,30 @@ class DatabaseClient:
         self.conn = self._initialize_connection()
         self.result_format = result_format
 
-    def _initialize_connection(self) -> duckdb.DuckDBPyConnection:
+    def _initialize_connection(self) -> Optional[duckdb.DuckDBPyConnection]:
         """Initialize connection to the MotherDuck or DuckDB database"""
 
         logger.info(f"🔌 Connecting to {self.db_type} database")
 
-        kw = {}
-        if self.db_type == "duckdb":
-            kw["read_only"] = self._read_only
+        if self.db_type == "duckdb" and self._read_only:
+            # check that we can connect, issue a `select 1` and then close + return None
+            try:
+                conn = duckdb.connect(
+                    self.db_path,
+                    config={
+                        "custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"
+                    },
+                )
+                conn.execute("SELECT 1")
+                conn.close()
+                return None
+            except Exception as e:
+                logger.error(f"❌ Read-only check failed: {e}")
+                raise
 
         conn = duckdb.connect(
             self.db_path,
             config={"custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"},
-            **kw,
         )
 
         logger.info(f"✅ Successfully connected to {self.db_type} database")
@@ -101,25 +112,37 @@ class DatabaseClient:
             )
         return db_path, "duckdb"
 
+    def _execute(self, query: str) -> str:
+        if self.conn is None:
+            # open short lived readonly connection, run query, close connection, return result
+            conn = duckdb.connect(
+                self.db_path,
+                config={"custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"},
+                read_only=True,
+            )
+            q = conn.execute(query)
+        else:
+            q = self.conn.execute(query)
+
+        if self.result_format == "markdown":
+            out = q.fetchdf().to_markdown()
+        elif self.result_format == "duckbox":
+            # Duckbox version of the output
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                q.show(max_rows=100, max_col_width=20)
+            out = buffer.getvalue()
+        else:
+            out = str(q.fetchall())
+
+        if self.conn is None:
+            conn.close()
+
+        return out
+
     def query(self, query: str) -> str:
         try:
-            if self.result_format == "markdown":
-                # Markdown version of the output
-                logger.info(
-                    f"🔍 Executing query: {query[:60]}{'...' if len(query) > 60 else ''}"
-                )
-                result = self.conn.execute(query).fetchdf().to_markdown()
-                logger.info("✅ Query executed successfully")
-                return result
-            elif self.result_format == "duckbox":
-                # Duckbox version of the output
-                buffer = io.StringIO()
-                with redirect_stdout(buffer):
-                    self.conn.sql(query).show(max_rows=100, max_col_width=20)
-                return buffer.getvalue()
-            else:
-                # Text version of the output
-                return str(self.conn.execute(query).fetchall())
+            return self._execute(query)
 
         except Exception as e:
             raise ValueError(f"❌ Error executing query: {e}")
