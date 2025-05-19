@@ -9,7 +9,6 @@ An MCP server implementation that interacts with DuckDB and MotherDuck databases
 - **Data sharing**: create and share databases
 - **SQL analytics**: use DuckDB's SQL dialect to query any size of data directly from your AI Assistant or IDE
 - **Serverless architecture**: run analytics without needing to configure instances or clusters
-- **Readonly connections**: Connect to a local duckdb in [readonly mode](https://duckdb.org/docs/stable/connect/concurrency.html)
 
 ## Components
 
@@ -239,7 +238,7 @@ Local DuckDB file:
 }
 ```
 
-Local DuckDB file in readonly mode:
+Local DuckDB file in [readonly mode](https://duckdb.org/docs/stable/connect/concurrency.html):
 
 ```json
 {
@@ -256,6 +255,14 @@ Local DuckDB file in readonly mode:
   }
 }
 ```
+
+**Note**: readonly mode for local file-backed DuckDB connections also makes use of
+short lived connections. Each time the query MCP tool is used a temporary,
+reaodnly connection is created + query is executed + connection is closed. This
+feature was motivated by a workflow where [DBT](https://www.getdbt.com) was for
+modeling data within duckdb and then an MCP client (Windsurf/Cline/Claude/Cursor)
+was used for exploring the database. The short lived connections allow each tool
+to run and then release their connection, allowing the next tool to connect.
 
 ## Example Queries
 

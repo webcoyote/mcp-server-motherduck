@@ -53,6 +53,7 @@ class DatabaseClient:
                     config={
                         "custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"
                     },
+                    read_only=self._read_only,
                 )
                 conn.execute("SELECT 1")
                 conn.close()
@@ -61,6 +62,10 @@ class DatabaseClient:
                 logger.error(f"❌ Read-only check failed: {e}")
                 raise
 
+        if self._read_only:
+            raise ValueError(
+                "Read-only mode is only supported for local DuckDB databases. See `saas_mode` for similar functionality with MotherDuck."
+            )
         conn = duckdb.connect(
             self.db_path,
             config={"custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"},
@@ -118,7 +123,7 @@ class DatabaseClient:
             conn = duckdb.connect(
                 self.db_path,
                 config={"custom_user_agent": f"mcp-server-motherduck/{SERVER_VERSION}"},
-                read_only=True,
+                read_only=self._read_only,
             )
             q = conn.execute(query)
         else:

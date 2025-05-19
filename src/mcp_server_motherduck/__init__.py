@@ -42,7 +42,7 @@ def main():
     parser.add_argument(
         "--read-only",
         action="store_true",
-        help="Flag for connecting to DuckDB in read-only mode. Only supported for local DuckDB databases.",
+        help="Flag for connecting to DuckDB in read-only mode. Only supported for local DuckDB databases. Also makes use of short lived connections so multiple MCP clients or other systems can remain active (though each operation must be done sequentially).",
     )
 
     args = parser.parse_args()
