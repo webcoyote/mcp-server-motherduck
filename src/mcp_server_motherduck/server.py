@@ -12,7 +12,7 @@ from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
 
-SERVER_VERSION = "0.4.3"
+SERVER_VERSION = "0.5"
 
 logger = logging.getLogger("mcp_server_motherduck")
 
