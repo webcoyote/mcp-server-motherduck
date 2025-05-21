@@ -172,7 +172,6 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
 **Important Notes**:
 
 - Replace `YOUR_MOTHERDUCK_TOKEN_HERE` with your actual MotherDuck token
-- Replace `YOUR_HOME_FOLDER_PATH` with the path to your home directory (needed by DuckDB for file operations). For example, on macOS, it would be `/Users/your_username`
 - The `HOME` environment variable is required for DuckDB to function properly.
 
 ## Securing your MCP Server when querying MotherDuck
