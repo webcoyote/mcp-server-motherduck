@@ -5,6 +5,7 @@ from pydantic import AnyUrl
 from typing import Literal, Optional
 import io
 from contextlib import redirect_stdout
+from tabulate import tabulate
 import mcp.server.stdio
 import mcp.types as types
 from mcp.server import NotificationOptions, Server
@@ -12,7 +13,7 @@ from mcp.server.models import InitializationOptions
 from .prompt import PROMPT_TEMPLATE
 
 
-SERVER_VERSION = "0.5"
+SERVER_VERSION = "0.5.1"
 
 logger = logging.getLogger("mcp_server_motherduck")
 
@@ -130,7 +131,7 @@ class DatabaseClient:
             q = self.conn.execute(query)
 
         if self.result_format == "markdown":
-            out = q.fetchdf().to_markdown()
+            out = tabulate(q.fetchall(), headers=[d[0]+'\n'+d[1] for d in q.description], tablefmt="pretty")
         elif self.result_format == "duckbox":
             # Duckbox version of the output
             buffer = io.StringIO()
