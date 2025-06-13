@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO, format="[%(name)s] %(levelname)s - %(mes
 @click.option("--port", default=8000, help="Port to listen on for SSE")
 @click.option(
     "--transport",
-    type=click.Choice(["stdio", "sse"]),
+    type=click.Choice(["stdio", "sse", "stream"]),
     default="stdio",
     help="(Default: `stdio`) Transport type",
 )
@@ -47,6 +47,12 @@ logging.basicConfig(level=logging.INFO, format="[%(name)s] %(levelname)s - %(mes
     is_flag=True,
     help="Flag for connecting to DuckDB in read-only mode. Only supported for local DuckDB databases. Also makes use of short lived connections so multiple MCP clients or other systems can remain active (though each operation must be done sequentially).",
 )
+@click.option(
+    "--json-response",
+    is_flag=True,
+    default=False,
+    help="(Default: `False`) Enable JSON responses instead of SSE streams. Only supported for `stream` transport.",
+)
 def main(
     port,
     transport,
@@ -56,6 +62,7 @@ def main(
     saas_mode,
     result_format,
     read_only,
+    json_response,
 ):
     """Main entry point for the package."""
 
@@ -98,6 +105,49 @@ def main(
         import uvicorn
 
         uvicorn.run(starlette_app, host="127.0.0.1", port=port)
+
+    elif transport == "stream":
+        from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
+        from collections.abc import AsyncIterator
+        from starlette.types import Receive, Scope, Send
+        import contextlib
+
+        # Create the session manager with true stateless mode
+        session_manager = StreamableHTTPSessionManager(
+            app=app,
+            event_store=None,
+            json_response=json_response,
+            stateless=True,
+        )
+
+        async def handle_streamable_http(
+            scope: Scope, receive: Receive, send: Send
+        ) -> None:
+            await session_manager.handle_request(scope, receive, send)
+
+        @contextlib.asynccontextmanager
+        async def lifespan(app: Starlette) -> AsyncIterator[None]:
+            """Context manager for session manager."""
+            async with session_manager.run():
+                logger.info("Application started with StreamableHTTP session manager!")
+                try:
+                    yield
+                finally:
+                    logger.info("Application shutting down...")
+
+        # Create an ASGI application using the transport
+        starlette_app = Starlette(
+            debug=True,
+            routes=[
+                Mount("/mcp", app=handle_streamable_http),
+            ],
+            lifespan=lifespan,
+        )
+
+        import uvicorn
+
+        uvicorn.run(starlette_app, host="127.0.0.1", port=port)
+
     else:
         from mcp.server.stdio import stdio_server
 
