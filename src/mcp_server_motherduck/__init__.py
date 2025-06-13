@@ -109,6 +109,8 @@ def main(
     elif transport == "stream":
         from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
         from collections.abc import AsyncIterator
+        from starlette.applications import Starlette
+        from starlette.routing import Mount
         from starlette.types import Receive, Scope, Send
         import contextlib
 
