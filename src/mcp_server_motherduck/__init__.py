@@ -4,6 +4,8 @@ import click
 from .server import build_application
 from .configs import SERVER_VERSION
 
+__version__ = SERVER_VERSION
+
 logger = logging.getLogger("mcp_server_motherduck")
 logging.basicConfig(level=logging.INFO, format="[%(name)s] %(levelname)s - %(message)s")
 
