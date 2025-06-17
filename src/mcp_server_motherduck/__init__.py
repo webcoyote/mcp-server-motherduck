@@ -72,7 +72,6 @@ def main(
 
     logger.info("🦆 MotherDuck MCP Server v" + SERVER_VERSION)
     logger.info("Ready to execute SQL queries via DuckDB/MotherDuck")
-    logger.info("Waiting for client connection...")
 
     app, init_opts = build_application(
         db_path=db_path,
@@ -89,6 +88,8 @@ def main(
         from starlette.responses import Response
         from starlette.routing import Mount, Route
 
+        logger.info("MCP server initialized in \033[32msse\033[0m mode")
+
         sse = SseServerTransport("/messages/")
 
         async def handle_sse(request):
@@ -97,6 +98,10 @@ def main(
             ) as (read_stream, write_stream):
                 await app.run(read_stream, write_stream, init_opts)
             return Response()
+
+        logger.info(
+            f"🦆 Connect to MotherDuck MCP Server at \033[1m\033[36mhttp://127.0.0.1:{port}/sse\033[0m"
+        )
 
         starlette_app = Starlette(
             debug=True,
@@ -123,6 +128,8 @@ def main(
         from starlette.types import Receive, Scope, Send
         import contextlib
 
+        logger.info("MCP server initialized in \033[32mhttp-streamable\033[0m mode")
+
         # Create the session manager with true stateless mode
         session_manager = StreamableHTTPSessionManager(
             app=app,
@@ -140,11 +147,17 @@ def main(
         async def lifespan(app: Starlette) -> AsyncIterator[None]:
             """Context manager for session manager."""
             async with session_manager.run():
-                logger.info("Application started with StreamableHTTP session manager!")
+                logger.info("MCP server started with StreamableHTTP session manager")
                 try:
                     yield
                 finally:
-                    logger.info("Application shutting down...")
+                    logger.info(
+                        "🦆 MotherDuck MCP Server in \033[32mhttp-streamable\033[0m mode shutting down"
+                    )
+
+        logger.info(
+            f"🦆 Connect to MotherDuck MCP Server at \033[1m\033[36mhttp://127.0.0.1:{port}/mcp\033[0m"
+        )
 
         # Create an ASGI application using the transport
         starlette_app = Starlette(
@@ -167,14 +180,18 @@ def main(
     else:
         from mcp.server.stdio import stdio_server
 
+        logger.info("MCP server initialized in \033[32mstdio\033[0m mode")
+        logger.info("Waiting for client connection")
+
         async def arun():
             async with stdio_server() as (read_stream, write_stream):
                 await app.run(read_stream, write_stream, init_opts)
 
         anyio.run(arun)
-
-    # This will only be reached when the server is shutting down
-    logger.info("🦆 MotherDuck MCP Server shutting down...")
+        # This will only be reached when the server is shutting down
+        logger.info(
+            "🦆 MotherDuck MCP Server in \033[32mstdio\033[0m mode shutting down"
+        )
 
 
 # Optionally expose other important items at package level
