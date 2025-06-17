@@ -2,12 +2,14 @@ import anyio
 import logging
 import click
 from .server import build_application
-from .configs import SERVER_VERSION
+from .configs import SERVER_VERSION, UVICORN_LOGGING_CONFIG
 
 __version__ = SERVER_VERSION
 
 logger = logging.getLogger("mcp_server_motherduck")
-logging.basicConfig(level=logging.INFO, format="[%(name)s] %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="[motherduck] %(levelname)s - %(message)s"
+)
 
 
 @click.command()
@@ -106,7 +108,12 @@ def main(
 
         import uvicorn
 
-        uvicorn.run(starlette_app, host="127.0.0.1", port=port)
+        uvicorn.run(
+            starlette_app,
+            host="127.0.0.1",
+            port=port,
+            log_config=UVICORN_LOGGING_CONFIG,
+        )
 
     elif transport == "stream":
         from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
@@ -150,7 +157,12 @@ def main(
 
         import uvicorn
 
-        uvicorn.run(starlette_app, host="127.0.0.1", port=port)
+        uvicorn.run(
+            starlette_app,
+            host="127.0.0.1",
+            port=port,
+            log_config=UVICORN_LOGGING_CONFIG,
+        )
 
     else:
         from mcp.server.stdio import stdio_server
@@ -162,7 +174,7 @@ def main(
         anyio.run(arun)
 
     # This will only be reached when the server is shutting down
-    logger.info("\n🦆 MotherDuck MCP Server shutting down...")
+    logger.info("🦆 MotherDuck MCP Server shutting down...")
 
 
 # Optionally expose other important items at package level
