@@ -15,7 +15,6 @@ logger = logging.getLogger("mcp_server_motherduck")
 def build_application(
     db_path: str,
     motherduck_token: str | None = None,
-    result_format: Literal["markdown", "duckbox", "text"] = "markdown",
     home_dir: str | None = None,
     saas_mode: bool = False,
     read_only: bool = False,
@@ -24,7 +23,6 @@ def build_application(
     server = Server("mcp-server-motherduck")
     db_client = DatabaseClient(
         db_path=db_path,
-        result_format=result_format,
         motherduck_token=motherduck_token,
         home_dir=home_dir,
         saas_mode=saas_mode,

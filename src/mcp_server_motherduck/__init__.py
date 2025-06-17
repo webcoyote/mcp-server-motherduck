@@ -41,12 +41,6 @@ logging.basicConfig(
     help="Flag for connecting to MotherDuck in SaaS mode",
 )
 @click.option(
-    "--result-format",
-    default="markdown",
-    type=click.Choice(["markdown", "duckbox", "text"]),
-    help="(Default: `markdown`) Format of the query result",
-)
-@click.option(
     "--read-only",
     is_flag=True,
     help="Flag for connecting to DuckDB in read-only mode. Only supported for local DuckDB databases. Also makes use of short lived connections so multiple MCP clients or other systems can remain active (though each operation must be done sequentially).",
@@ -64,7 +58,6 @@ def main(
     motherduck_token,
     home_dir,
     saas_mode,
-    result_format,
     read_only,
     json_response,
 ):
@@ -76,7 +69,6 @@ def main(
     app, init_opts = build_application(
         db_path=db_path,
         motherduck_token=motherduck_token,
-        result_format=result_format,
         home_dir=home_dir,
         saas_mode=saas_mode,
         read_only=read_only,

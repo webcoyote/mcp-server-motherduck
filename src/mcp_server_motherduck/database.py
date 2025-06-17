@@ -15,7 +15,6 @@ class DatabaseClient:
         self,
         db_path: str | None = None,
         motherduck_token: str | None = None,
-        result_format: Literal["markdown", "duckbox", "text"] = "markdown",
         home_dir: str | None = None,
         saas_mode: bool = False,
         read_only: bool = False,
@@ -31,7 +30,6 @@ class DatabaseClient:
             os.environ["HOME"] = home_dir
 
         self.conn = self._initialize_connection()
-        self.result_format = result_format
 
     def _initialize_connection(self) -> Optional[duckdb.DuckDBPyConnection]:
         """Initialize connection to the MotherDuck or DuckDB database"""
@@ -122,20 +120,11 @@ class DatabaseClient:
         else:
             q = self.conn.execute(query)
 
-        if self.result_format == "markdown":
-            out = tabulate(
-                q.fetchall(),
-                headers=[d[0] + "\n" + d[1] for d in q.description],
-                tablefmt="pretty",
-            )
-        elif self.result_format == "duckbox":
-            # Duckbox version of the output
-            buffer = io.StringIO()
-            with redirect_stdout(buffer):
-                q.show(max_rows=100, max_col_width=20)
-            out = buffer.getvalue()
-        else:
-            out = str(q.fetchall())
+        out = tabulate(
+            q.fetchall(),
+            headers=[d[0] + "\n" + d[1] for d in q.description],
+            tablefmt="pretty",
+        )
 
         if self.conn is None:
             conn.close()
