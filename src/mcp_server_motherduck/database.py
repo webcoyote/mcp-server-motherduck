@@ -148,3 +148,21 @@ class DatabaseClient:
 
         except Exception as e:
             raise ValueError(f"❌ Error executing query: {e}")
+
+    def filter_tables(self, question: str, database_name: str) -> str:
+        _question_token_list = question.replace("'", "''").split(" ")
+        _question_token_string = ", ".join(
+            [f"'{token}'" for token in _question_token_list]
+        )
+        _filter_schema_query = f"""select database_name, schema_name, 
+            table_name, table_comment, 
+            columns, column_types, 
+            column_comments, sql 
+        from  __MD_FILTER_TABLES([{_question_token_string}], '{database_name}') 
+        limit 15"""
+
+        return self._execute(_filter_schema_query)
+
+    def list_databases(self) -> str:
+        _list_databases_query = "select database_name, path from duckdb_databases()"
+        return self._execute(_list_databases_query)

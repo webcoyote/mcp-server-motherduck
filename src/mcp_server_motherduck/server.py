@@ -113,6 +113,38 @@ def build_application(
                     "required": ["query"],
                 },
             ),
+            types.Tool(
+                name="list_databases",
+                description="This tools gives a list of the databases the user has access to",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                },
+            ),
+            types.Tool(
+                name="filter_tables",
+                description="""Filters relevant database tables, schemas, and columns based on a user's question. 
+                Returns database_name, schema_name, table_name, table_comment, columns, column_types, column_comments, 
+                and SQL for matched tables. This tool analyzes the question text to find tables and columns that are 
+                semantically relevant, including those where the database/schema names match the query terms. 
+                It provides comprehensive metadata including table and column comments to help generate accurate SQL 
+                queries with proper context.""",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "question": {
+                            "type": "string",
+                            "description": "A question that the user is asking about the database for which a SQL query is needed",
+                        },
+                        "database_name": {
+                            "type": "string",
+                            "description": "The name of the database to prioritize the filtered output tables for",
+                        },
+                    },
+                    "required": ["question", "database_name"],
+                },
+            ),
         ]
 
     @server.call_tool()
@@ -131,6 +163,23 @@ def build_application(
                         types.TextContent(type="text", text="Error: No query provided")
                     ]
                 tool_response = db_client.query(arguments["query"])
+                return [types.TextContent(type="text", text=str(tool_response))]
+
+            if name == "list_databases":
+                tool_response = db_client.list_databases()
+                return [types.TextContent(type="text", text=str(tool_response))]
+
+            if name == "filter_tables":
+                if arguments is None:
+                    return [
+                        types.TextContent(
+                            type="text", text="Error: No question provided"
+                        )
+                    ]
+                tool_response = db_client.filter_tables(
+                    arguments.get("question", "-"),
+                    arguments.get("database_name", "my_db"),
+                )
                 return [types.TextContent(type="text", text=str(tool_response))]
 
             return [types.TextContent(type="text", text=f"Unsupported tool: {name}")]
