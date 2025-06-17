@@ -2,7 +2,7 @@ import anyio
 import logging
 import click
 from .server import build_application
-from .configs import SERVER_VERSION, UVICORN_LOGGING_CONFIG
+from .configs import SERVER_VERSION, SERVER_LOCALHOST, UVICORN_LOGGING_CONFIG
 
 __version__ = SERVER_VERSION
 
@@ -100,7 +100,7 @@ def main(
             return Response()
 
         logger.info(
-            f"🦆 Connect to MotherDuck MCP Server at \033[1m\033[36mhttp://127.0.0.1:{port}/sse\033[0m"
+            f"🦆 Connect to MotherDuck MCP Server at \033[1m\033[36mhttp://{SERVER_LOCALHOST}:{port}/sse\033[0m"
         )
 
         starlette_app = Starlette(
@@ -115,7 +115,7 @@ def main(
 
         uvicorn.run(
             starlette_app,
-            host="127.0.0.1",
+            host=SERVER_LOCALHOST,
             port=port,
             log_config=UVICORN_LOGGING_CONFIG,
         )
@@ -156,7 +156,7 @@ def main(
                     )
 
         logger.info(
-            f"🦆 Connect to MotherDuck MCP Server at \033[1m\033[36mhttp://127.0.0.1:{port}/mcp\033[0m"
+            f"🦆 Connect to MotherDuck MCP Server at \033[1m\033[36mhttp://{SERVER_LOCALHOST}:{port}/mcp\033[0m"
         )
 
         # Create an ASGI application using the transport
@@ -172,7 +172,7 @@ def main(
 
         uvicorn.run(
             starlette_app,
-            host="127.0.0.1",
+            host=SERVER_LOCALHOST,
             port=port,
             log_config=UVICORN_LOGGING_CONFIG,
         )

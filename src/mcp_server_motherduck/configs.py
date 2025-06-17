@@ -2,6 +2,8 @@ from typing import Any
 
 SERVER_VERSION = "0.5.1"
 
+SERVER_LOCALHOST = "127.0.0.1"
+
 UVICORN_LOGGING_CONFIG: dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
