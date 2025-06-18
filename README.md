@@ -34,6 +34,37 @@ The server offers one tool:
 
 All interactions with both DuckDB and MotherDuck are done through writing SQL queries.
 
+## Command Line Parameters
+
+The MCP server supports the following parameters:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `--transport` | Choice | `stdio` | Transport type. Options: `stdio`, `sse`, `stream` |
+| `--port` | Integer | `8000` | Port to listen on for sse and stream transport mode |
+| `--db-path` | String | `md:` | Path to local DuckDB database file or MotherDuck database |
+| `--motherduck-token` | String | `None` | Access token to use for MotherDuck database connections (uses `motherduck_token` env var by default) |
+| `--read-only` | Flag | `False` | Flag for connecting to DuckDB in read-only mode. Only supported for local DuckDB databases. Uses short-lived connections for concurrent access |
+| `--home-dir` | String | `None` | Home directory for DuckDB (uses `HOME` env var by default) |
+| `--saas-mode` | Flag | `False` | Flag for connecting to MotherDuck in SaaS mode |
+| `--json-response` | Flag | `False` | Enable JSON responses for HTTP stream. Only supported for `stream` transport |
+
+### Quick Usage Examples
+
+```bash
+# Connect to local DuckDB file in read-only mode with stream transport mode
+uvx mcp-server-motherduck --transport stream --db-path /path/to/local.db --read-only
+
+# Connect to MotherDuck with token with stream transport mode
+uvx mcp-server-motherduck --transport stream --db-path md: --motherduck-token YOUR_TOKEN
+
+# Connect to local DuckDB file in read-only mode with stream transport mode
+uvx mcp-server-motherduck --transport stream --db-path /path/to/local.db --read-only
+
+# Connect to MotherDuck in SaaS mode for enhanced security with stream transport mode
+uvx mcp-server-motherduck --transport stream --db-path md: --motherduck-token YOUR_TOKEN --saas-mode
+```
+
 ## Getting Started
 
 ### General Prerequisites
@@ -83,11 +114,11 @@ See [Connect to local DuckDB](#connect-to-local-duckdb).
 
 ### Usage with VS Code
 
-[![Install with UV in VS Code](https://img.shields.io/badge/VS_Code-UV-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=mcp-server-motherduck&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22mcp-server-motherduck%22%2C%22--db-path%22%2C%22md%3A%22%2C%22--motherduck-token%22%2C%22%24%7Binput%3Amotherduck_token%7D%22%5D%7D&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22motherduck_token%22%2C%22description%22%3A%22MotherDuck+Token%22%2C%22password%22%3Atrue%7D%5D) [![Install with UV in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-UV-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=mcp-server-motherduck&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22mcp-server-motherduck%22%2C%22--db-path%22%2C%22md%3A%22%2C%22--motherduck-token%22%2C%22%24%7Binput%3Amotherduck_token%7D%22%5D%7D&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22motherduck_token%22%2C%22description%22%3A%22MotherDuck+Token%22%2C%22password%22%3Atrue%7D%5D&quality=insiders)
+[![Install with UV in VS Code](https://img.shields.io/badge/VS_Code-Install_with_UV-0098FF?style=plastic)](https://insiders.vscode.dev/redirect/mcp/install?name=mcp-server-motherduck&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22mcp-server-motherduck%22%2C%22--db-path%22%2C%22md%3A%22%2C%22--motherduck-token%22%2C%22%24%7Binput%3Amotherduck_token%7D%22%5D%7D&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22motherduck_token%22%2C%22description%22%3A%22MotherDuck+Token%22%2C%22password%22%3Atrue%7D%5D) [![Install with UV in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_with_UV-24bfa5?style=plastic&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=mcp-server-motherduck&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22mcp-server-motherduck%22%2C%22--db-path%22%2C%22md%3A%22%2C%22--motherduck-token%22%2C%22%24%7Binput%3Amotherduck_token%7D%22%5D%7D&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22motherduck_token%22%2C%22description%22%3A%22MotherDuck+Token%22%2C%22password%22%3Atrue%7D%5D&quality=insiders)
 
-1. For the quickest installation, click one of the "Install with UV" buttons at the top of this README.
+For the quickest installation, click one of the "Install with UV" buttons at the top.
 
-### Manual Installation
+#### Manual Installation
 
 Add the following JSON block to your User Settings (JSON) file in VS Code. You can do this by pressing `Ctrl + Shift + P` and typing `Preferences: Open User Settings (JSON)`.
 
@@ -278,47 +309,29 @@ Once configured, you can e.g. ask Claude to run queries like:
 - "Join data from my local DuckDB database with a table in MotherDuck"
 - "Analyze data stored in Amazon S3"
 
-## Testing
-
-The server is designed to be run by tools like Claude Desktop and Cursor, but you can start it manually for testing purposes. When testing the server manually, you can specify which database to connect to using the `--db-path` parameter:
-
-1. **Default MotherDuck database**:
-
-   - To connect to the default MotherDuck database, you will need to pass the auth token using the `--motherduck-token` parameter.
-
-   ```bash
-   uvx mcp-server-motherduck --db-path md: --motherduck-token <your_motherduck_token>
-   ```
-
-2. **Specific MotherDuck database**:
-
-   ```bash
-   uvx mcp-server-motherduck --db-path md:your_database_name --motherduck-token <your_motherduck_token>
-   ```
-
-3. **Local DuckDB database**:
-
-   ```bash
-   uvx mcp-server-motherduck --db-path /path/to/your/local.db
-   ```
-
-4. **In-memory database**:
-
-   ```bash
-   uvx mcp-server-motherduck --db-path :memory:
-   ```
-
-If you don't specify a database path but have set the `motherduck_token` environment variable, the server will automatically connect to the default MotherDuck database (`md:`).
-
 ## Running in SSE mode
 
-The server could also be running SSE mode using `supergateway` by running the following command:
+The server can run in SSE mode in two ways:
+
+### Direct SSE mode
+
+Run the server directly in SSE mode using the `--transport sse` flag:
+
+```bash
+uvx mcp-server-motherduck --transport sse --port 8000 --db-path md: --motherduck-token <your_motherduck_token>
+```
+
+This will start the server listening on the specified port (default 8000) and you can point your clients directly to this endpoint.
+
+### Using supergateway
+
+Alternatively, you can run SSE mode using `supergateway`:
 
 ```bash
 npx -y supergateway --stdio "uvx mcp-server-motherduck --db-path md: --motherduck-token <your_motherduck_token>"
 ```
 
-And you can point your clients such as Claude Desktop, Cursor to this endpoint.
+Both methods allow you to point your clients such as Claude Desktop, Cursor to the SSE endpoint.
 
 ## Development configuration
 
