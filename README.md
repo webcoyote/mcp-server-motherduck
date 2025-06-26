@@ -38,16 +38,16 @@ All interactions with both DuckDB and MotherDuck are done through writing SQL qu
 
 The MCP server supports the following parameters:
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `--transport` | Choice | `stdio` | Transport type. Options: `stdio`, `sse`, `stream` |
-| `--port` | Integer | `8000` | Port to listen on for sse and stream transport mode |
-| `--db-path` | String | `md:` | Path to local DuckDB database file or MotherDuck database |
-| `--motherduck-token` | String | `None` | Access token to use for MotherDuck database connections (uses `motherduck_token` env var by default) |
-| `--read-only` | Flag | `False` | Flag for connecting to DuckDB in read-only mode. Only supported for local DuckDB databases. Uses short-lived connections for concurrent access |
-| `--home-dir` | String | `None` | Home directory for DuckDB (uses `HOME` env var by default) |
-| `--saas-mode` | Flag | `False` | Flag for connecting to MotherDuck in SaaS mode |
-| `--json-response` | Flag | `False` | Enable JSON responses for HTTP stream. Only supported for `stream` transport |
+| Parameter | Type | Default | Description                                                                                                                                                                                                                                                    |
+|-----------|------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--transport` | Choice | `stdio` | Transport type. Options: `stdio`, `sse`, `stream`                                                                                                                                                                                                              |
+| `--port` | Integer | `8000` | Port to listen on for sse and stream transport mode                                                                                                                                                                                                            |
+| `--db-path` | String | `md:` | Path to local DuckDB database file or MotherDuck database                                                                                                                                                                                                      |
+| `--motherduck-token` | String | `None` | Access token to use for MotherDuck database connections (uses `motherduck_token` env var by default)                                                                                                                                                           |
+| `--read-only` | Flag | `False` | Flag for connecting to DuckDB or MotherDuck in read-only mode. For DuckDB it uses short-lived connections to enable concurrent access                                                                                                                          |
+| `--home-dir` | String | `None` | Home directory for DuckDB (uses `HOME` env var by default)                                                                                                                                                                                                     |
+| `--saas-mode` | Flag | `False` | Flag for connecting to MotherDuck in [SaaS mode](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/authenticating-to-motherduck/#authentication-using-saas-mode). (disables filesystem and write permissions for local DuckDB) |
+| `--json-response` | Flag | `False` | Enable JSON responses for HTTP stream. Only supported for `stream` transport                                                                                                                                                                                   |
 
 ### Quick Usage Examples
 
