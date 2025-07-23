@@ -206,6 +206,44 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
 
 - Replace `YOUR_MOTHERDUCK_TOKEN_HERE` with your actual MotherDuck token
 
+### Usage with Claude Code
+
+Claude Code supports MCP servers through CLI commands or JSON configuration. Here are two ways to set it up:
+
+#### Option 1: Using CLI Commands
+
+Add the MotherDuck MCP server directly using the Claude Code CLI:
+
+```bash
+claude mcp add mcp-server-motherduck uvx mcp-server-motherduck -- --db-path md: --motherduck-token <YOUR_MOTHERDUCK_TOKEN_HERE>
+```
+
+#### Option 2: Using JSON Configuration
+
+Add the server using a JSON configuration:
+
+```bash
+claude mcp add-json mcp-server-motherduck '{
+  "command": "uvx",
+  "args": [
+    "mcp-server-motherduck",
+    "--db-path",
+    "md:",
+    "--motherduck-token",
+    "<YOUR_MOTHERDUCK_TOKEN_HERE>"
+  ]
+}'
+```
+
+**Scoping Options**:
+- Use `--local` (default) for project-specific configuration
+- Use `--project` to share the configuration with your team via `.mcp.json`
+- Use `--user` to make the server available across all your projects
+
+**Important Notes**:
+- Replace `YOUR_MOTHERDUCK_TOKEN_HERE` with your actual MotherDuck token
+- Claude Code also supports environment variable expansion, so you can use `${MOTHERDUCK_TOKEN}` if you've set the environment variable
+
 ## Securing your MCP Server when querying MotherDuck
 
 If the MCP server is exposed to third parties and should only have read access to data, we recommend using a read scaling token and running the MCP server in SaaS mode.
